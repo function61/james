@@ -14,12 +14,26 @@ Features:
 
 Currently highly specific to needs of function61.com, might change in the future or might not.
 
-Overview
---------
 
-1. [Create VM image](#create-vm-image)
-2. [Create VMs](#create-vms)
-3. [Bootstrap cluster](#bootstrap-cluster)
+Procedure
+---------
+
+1. [Install, configure James](#install-configure-james)
+2. [Create VM image](#create-vm-image)
+3. [Create VMs](#create-vms)
+4. [Bootstrap cluster](#bootstrap-cluster)
+5. [Deploy system services](#deploy-system-services)
+
+
+Install, configure James
+------------------------
+
+```
+$ VERSION_TO_DOWNLOAD="..." # find this from Bintray link
+$ sudo curl --location --fail --output /usr/local/bin/james "https://dl.bintray.com/function61/james/$VERSION_TO_DOWNLOAD/james" && sudo chmod +x /usr/local/bin/james
+```
+
+Create & fill details in `jamesfile.json` (TODO: document)
 
 
 Create VM image
@@ -30,28 +44,107 @@ We use Packer to at least get a snapshot of the image, so we know exactly what w
 
 ```
 $ james iac
-$ 
+Entering infrastructure-as-code container. Press ctrl+c to exit
+$ bin/build-digitalocean-coreos.sh
+...
+--> digitalocean: A snapshot was created: 'fn61-coreos-2018-09-24-08-55' (ID: 38442790) in regions 'ams3'
 ```
+
+Take note of these things that you'll need later:
+
+- the snapshot name (`fn61-coreos-2018-09-24-08-55`) created above - you'll need it later.
+- CoreOS `PRETTY_NAME`. It's a good idea to document this in your Terraform config.
 
 
 Create VMs
 ----------
 
-Use Terraform to bring up the VMs.
+Create `nodes.tf` with content (this will create your first VM):
+
+```
+locals {
+	cluster = "prod4"
+}
+
+data "digitalocean_image" "fn61-coreos-1855-4-0-stable-2" {
+	name = "fn61-coreos-2018-09-24-08-55"
+}
+
+module "myfirstbox" {
+	box = "myfirstbox"
+	size = "s-1vcpu-1gb"
+	region = "ams3"
+	cluster = "${local.cluster}"
+	image = "${data.digitalocean_image.fn61-coreos-1855-4-0-stable-2.image}"
+
+	source = "./droplet"
+}
+```
+
+Then see execution plan:
+
+```
+$ james iac
+$ bin/plan.sh
+Plan: 1 to add, 0 to change, 0 to destroy.
+```
+
+Then execute that very same plan (still in `iac` container):
+
+```
+$ bin/apply.sh
+```
+
+Terraform's strength are its execution plans - you can see exactly what it tries to do,
+and when you instruct it to apply it, it doesn't do anything that's not in the plan. This
+prevents "terrorform" (if you use it carefully).
 
 
 Bootstrap cluster
 -----------------
 
-Init swarm: (TODO: use James for this, release James)
+Import Terraform's box state into James:
 
-- `$ docker swarm init`
-- `$ docker swarm join`
+```
+$ james boxes import
+Wrote jamesfile with 1 found boxes
+```
 
-Deploy dockersockproxy as a Swarm service
+Then bootstrap your cluster:
 
-Use Portainer to:
+```
+$ james boxes
+prod4-lingering-lrrr.do-ams3.fn61.net
+$ james bootstrap prod4-lingering-lrrr.do-ams3.fn61.net
+...
+```
 
-- Deploy Monitoring
-- Deploy Traefik
+James now bootstrapped your Docker Swarm cluster and deployed dockersockproxy. You are
+now ready to deploy Portainer (on your local computer for improved security):
 
+```
+$ james portainer launch
+```
+
+Now enter Portainer and add your cluster's details:
+
+```
+$ james portainer details
+Portainer connection details:
+                  Name: prod4
+          Endpoint URL: dockersockproxy.prod4.fn61.net:4431
+                   TLS: Yes
+              TLS mode: TLS with server and client verification
+    TLS CA certificate: Download from https://function61.com/ca-certificate.crt
+       TLS certificate: client-bundle.crt
+               TLS key: client-bundle.crt
+```
+
+
+Deploy system services
+----------------------
+
+To bring your cluster up to game, deploy these stacks (TODO: document):
+
+- Monitoring
+- Traefik
