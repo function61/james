@@ -14,7 +14,7 @@ func portainerDetails(jamesfile *Jamesfile) {
 			"          Endpoint URL: dockersockproxy.%s.%s:4431\n"+
 			"                   TLS: Yes\n"+
 			"              TLS mode: TLS with server and client verification\n"+
-			"    TLS CA certificate: Download from https://function61.com/ca-certificate.crt\n"+
+			"    TLS CA certificate: Download from https://fn61.net/ca.crt\n"+
 			"       TLS certificate: client-bundle.crt\n"+
 			"               TLS key: client-bundle.crt\n",
 		jamesfile.ClusterID,
