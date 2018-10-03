@@ -11,7 +11,7 @@ func portainerDetails(jamesfile *Jamesfile) {
 	fmt.Printf(
 		"Portainer connection details:\n"+
 			"                  Name: %s\n"+
-			"          Endpoint URL: portainer.%s.%s:4431\n"+
+			"          Endpoint URL: dockersockproxy.%s.%s:4431\n"+
 			"                   TLS: Yes\n"+
 			"              TLS mode: TLS with server and client verification\n"+
 			"    TLS CA certificate: Download from https://function61.com/ca-certificate.crt\n"+
