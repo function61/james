@@ -31,7 +31,7 @@ staticAnalysis() {
 }
 
 buildLinuxAmd64() {
-	(cd cmd/james && GOOS=linux GOARCH=amd64 go build -o ../../rel/james)
+	(cd cmd/james && GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=$FRIENDLY_REV_ID" -o ../../rel/james)
 }
 
 uploadBuildArtefacts() {

@@ -12,6 +12,8 @@ import (
 	"regexp"
 )
 
+var version = "dev"
+
 func runSshBash(addr string, username string, bashScript string, stdout io.Writer) error {
 	sshClient, err := ssh.Dial("tcp", addr, sshClientConfig(username))
 	reactToError(err)
@@ -150,8 +152,8 @@ func boxesEntry() *cobra.Command {
 func main() {
 	app := &cobra.Command{
 		Use:     os.Args[0],
-		Short:   "James is a cluster manager frontend for Docker Swarm",
-		Version: "?",
+		Short:   "James is your friendly infrastructure tool",
+		Version: version,
 	}
 
 	app.AddCommand(bootstrapEntry())
