@@ -56,7 +56,7 @@ func importBoxesEntry() *cobra.Command {
 
 			reactToError(writeJamesfile(jamesfile))
 
-			fmt.Printf("Wrote jamesfile with %d found boxes\n", len(foundBoxes))
+			fmt.Printf("Updated Jamesfile with %d boxes\n", len(foundBoxes))
 		},
 	}
 }

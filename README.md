@@ -5,18 +5,21 @@ James is your friendly toolbox for infrastructure management.
 
 Features:
 
-- Build and deploy VM images (via Packer + Terraform)
+- Build and deploy VM images (via Packer + Terraform) in immutable infrastructure manner
 - Manage DNS entries (via Cloudflare)
 - Bootstrap Docker Swarm cluster
 - List and acknowledge alerts (via lambda-alertmanager)
 - Deploy Portainer to manage your cluster
-- Connect via SSH to your cluster
+- Overlay networking (= all containers in cluster can communicate via encrypted channel)
+- Connect via SSH to your cluster nodes
 
 Currently highly specific to needs of function61.com, might change in the future or might not.
 
+The stack is highly opinionated - it focuses on simplicity/immutability/security instead of flexibility.
 
-Procedure
----------
+
+Procedure for bringing up a cluster from zero to production
+-----------------------------------------------------------
 
 1. [Install, configure James](#install-configure-james)
 2. [Create VM image](#create-vm-image)
@@ -55,9 +58,21 @@ Take note of these things that you'll need later:
 - the snapshot name (`fn61-coreos-2018-09-24-08-55`) created above - you'll need it later.
 - CoreOS `PRETTY_NAME`. It's a good idea to document this in your Terraform config.
 
+You should now be able to see the image in your DigitalOcean control panel, and it should be
+under 100 megabytes (they probably use copy-on-write to provide deduplication).
+
 
 Create VMs
 ----------
+
+Randomize a name for your new VM:
+
+```
+# first enter infrastructure-as-code container
+$ james iac
+$ bin/randomservername.sh
+misty-crushinator
+```
 
 Create `nodes.tf` with content (this will create your first VM):
 
@@ -70,8 +85,8 @@ data "digitalocean_image" "fn61-coreos-1855-4-0-stable-2" {
 	name = "fn61-coreos-2018-09-24-08-55"
 }
 
-module "myfirstbox" {
-	box = "myfirstbox"
+module "misty_crushinator" {
+	box = "misty-crushinator"
 	size = "s-1vcpu-1gb"
 	region = "ams3"
 	cluster = "${local.cluster}"
@@ -81,10 +96,9 @@ module "myfirstbox" {
 }
 ```
 
-Then see execution plan:
+Then generate an execution plan (still in `iac` container)::
 
 ```
-$ james iac
 $ bin/plan.sh
 Plan: 1 to add, 0 to change, 0 to destroy.
 ```
@@ -96,31 +110,33 @@ $ bin/apply.sh
 ```
 
 Terraform's strength are its execution plans - you can see exactly what it tries to do,
-and when you instruct it to apply it, it doesn't do anything that's not in the plan. This
+and when you execute it, Terraform doesn't do anything that's not in the plan. This
 prevents "terrorform" (if you use it carefully).
 
 
 Bootstrap cluster
 -----------------
 
-Import Terraform's box state into James:
+Import Terraform's box state into James (to let James know about boxes Terraform just created):
 
 ```
 $ james boxes import
-Wrote jamesfile with 1 found boxes
+Updated Jamesfile with 1 boxes
 ```
 
 Then bootstrap your cluster:
 
 ```
 $ james boxes
-prod4-lingering-lrrr.do-ams3.fn61.net
-$ james bootstrap prod4-lingering-lrrr.do-ams3.fn61.net
+prod4-misty-crushinator.do-ams3.fn61.net
+$ james bootstrap prod4-misty-crushinator.do-ams3.fn61.net
 ...
 ```
 
-James now bootstrapped your Docker Swarm cluster and deployed dockersockproxy. You are
-now ready to deploy Portainer (on your local computer for improved security):
+James now bootstrapped your Docker Swarm cluster, configured an
+[overlay network](https://docs.docker.com/network/overlay/) and deployed
+[dockersockproxy](https://github.com/function61/dockersockproxy). You are now ready to
+deploy Portainer (on your local computer for improved security):
 
 ```
 $ james portainer launch
