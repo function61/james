@@ -32,7 +32,6 @@ func iacEntry() *cobra.Command {
 				"-e", "DIGITALOCEAN_TOKEN="+jamesfile.DigitalOceanApiToken,
 				"-e", "CLOUDFLARE_EMAIL="+jamesfile.CloudflareEmail,
 				"-e", "CLOUDFLARE_TOKEN="+jamesfile.CloudflareToken,
-				"-v", cwd+"/secrets.env:/work/secrets.env",
 				"-v", cwd+"/nodes.tf:/work/nodes.tf",
 				"-v", cwd+"/services.tf:/work/services.tf",
 				"-v", cwd+"/terraform.tfstate:/work/terraform.tfstate",
