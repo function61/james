@@ -133,6 +133,13 @@ $ james boxes
 prod4-misty-crushinator.do-ams3.fn61.net
 $ james bootstrap prod4-misty-crushinator.do-ams3.fn61.net
 ...
+
+# cluster now has been bootstrapped, if you SSH in there should only be dockersockproxy running
+
+$ james ssh prod4-misty-crushinator.do-ams3.fn61.net
+$ docker ps
+CONTAINER ID        IMAGE                                         COMMAND           
+fdf3e68e5085        fn61/dockersockproxy:20180927_1158_e29f0727   "/dockersockproxy"
 ```
 
 James now bootstrapped your Docker Swarm cluster, configured an
