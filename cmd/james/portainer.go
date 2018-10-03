@@ -22,7 +22,7 @@ func portainerDetails(jamesfile *Jamesfile) {
 		jamesfile.Domain)
 }
 
-func portainerLaunch() error {
+func portainerDeploy() error {
 	startPortainer := exec.Command(
 		"docker",
 		"run",
@@ -35,7 +35,13 @@ func portainerLaunch() error {
 	startPortainer.Stdout = os.Stdout
 	startPortainer.Stderr = os.Stderr
 
-	return startPortainer.Run()
+	if err := startPortainer.Run(); err != nil {
+		return err
+	}
+
+	fmt.Println("Portainer should now be usable at http://localhost:9000/")
+
+	return nil
 }
 
 func portainerEntry() *cobra.Command {
@@ -45,11 +51,11 @@ func portainerEntry() *cobra.Command {
 	}
 
 	cmd.AddCommand(&cobra.Command{
-		Use:   "launch",
-		Short: "Launches Portainer on localhost",
+		Use:   "deploy",
+		Short: "Deploys Portainer on localhost",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			reactToError(portainerLaunch())
+			reactToError(portainerDeploy())
 		},
 	})
 

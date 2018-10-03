@@ -139,7 +139,9 @@ James now bootstrapped your Docker Swarm cluster, configured an
 deploy Portainer (on your local computer for improved security):
 
 ```
-$ james portainer launch
+$ james portainer deploy
+...
+Portainer should now be usable at http://localhost:9000/
 ```
 
 Now enter Portainer and add your cluster's details:
