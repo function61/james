@@ -1,7 +1,9 @@
 [![Build Status](https://travis-ci.org/function61/james.svg?branch=master)](https://travis-ci.org/function61/james)
 [![Download](https://api.bintray.com/packages/function61/james/main/images/download.svg)](https://bintray.com/function61/james/main/_latestVersion#files)
 
-James is your friendly toolbox for infrastructure management.
+James is your friendly toolbox for infrastructure management. James is actually quite lazy
+and doesn't do anything special but just delegates all the work to other tools. James is
+just the glue that ties the entire process into nice and easy-to-use package.
 
 Features:
 
@@ -36,7 +38,7 @@ $ VERSION_TO_DOWNLOAD="..." # find this from Bintray link
 $ sudo curl --location --fail --output /usr/local/bin/james "https://dl.bintray.com/function61/james/$VERSION_TO_DOWNLOAD/james" && sudo chmod +x /usr/local/bin/james
 ```
 
-Create & fill details in `jamesfile.json` (TODO: document)
+Create & fill details in `jamesfile.json` (TODO: document, but see `Jamesfile struct` in source code)
 
 
 Create VM image
