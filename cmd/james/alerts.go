@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/apcera/termtables"
 	"github.com/spf13/cobra"
+	"strings"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func alertsList(jamesfile *Jamesfile) error {
 			alert.Key,
 			alert.Timestamp.Format(time.RFC3339),
 			alert.Subject,
-			alert.Details)
+			truncate(onelinerize(alert.Details), 96))
 	}
 
 	fmt.Println(tbl.Render())
@@ -84,4 +85,16 @@ type GetAlertsResponse []AlertItem
 
 type AcknowledgeAlertRequest struct {
 	Key string `json:"alert_key"`
+}
+
+func truncate(input string, maxLen int) string {
+	if len(input) > maxLen {
+		return input[0:maxLen-2] + ".."
+	}
+
+	return input
+}
+
+func onelinerize(input string) string {
+	return strings.Replace(input, "\n", "\\n", -1)
 }
