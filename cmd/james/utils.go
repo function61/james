@@ -36,8 +36,11 @@ func readJamesfile() (*Jamesfile, error) {
 	}
 	defer file.Close()
 
+	jsonDecoder := json.NewDecoder(file)
+	jsonDecoder.DisallowUnknownFields()
+
 	jf := &Jamesfile{}
-	if err := json.NewDecoder(file).Decode(&jf); err != nil {
+	if err := jsonDecoder.Decode(jf); err != nil {
 		return nil, err
 	}
 
