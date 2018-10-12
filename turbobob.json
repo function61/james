@@ -5,6 +5,7 @@
 	"builders": [
 		{
 			"name": "default",
+			"dockerfile_path": "build-default.Dockerfile",
 			"mount_destination": "/go/src/github.com/function61/james",
 			"dev_command": [
 				"bash"
@@ -12,7 +13,8 @@
 			"dev_ports": [],
 			"pass_envs": [
 				"BINTRAY_CREDS"
-			]
+			],
+			"contextless_build": true
 		}
 	],
 	"docker_images": []
