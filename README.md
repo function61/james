@@ -134,7 +134,7 @@ prod4-misty-crushinator.do-ams3.fn61.net
 $ james bootstrap prod4-misty-crushinator.do-ams3.fn61.net
 ...
 
-# cluster now has been bootstrapped, if you SSH in there should only be dockersockproxy running
+# cluster has now been bootstrapped, if you SSH in there should only be dockersockproxy running
 
 $ james ssh prod4-misty-crushinator.do-ams3.fn61.net
 $ docker ps
