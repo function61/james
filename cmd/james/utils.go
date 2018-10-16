@@ -23,10 +23,18 @@ type Jamesfile struct {
 	InfrastructureAsCodeImageVersion string          `json:"InfrastructureAsCodeImageVersion"`
 	DockerSockProxyServerCertKey     string          `json:"DockerSockProxyServerCertKey"`
 	DockerSockProxyVersion           string          `json:"DockerSockProxyVersion"`
-	DigitalOceanApiToken             string          `json:"DigitalOceanApiToken"`
-	CloudflareEmail                  string          `json:"CloudflareEmail"`
-	CloudflareToken                  string          `json:"CloudflareToken"`
-	Boxes                            []BoxDefinition `json:"Boxes"`
+	Credentials                      Credentials     `json:"credentials"`
+	Boxes                            []BoxDefinition `json:"boxes"`
+}
+
+type UsernamePasswordCredentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+type Credentials struct {
+	AWS          *UsernamePasswordCredentials `json:"aws"`
+	Cloudflare   *UsernamePasswordCredentials `json:"cloudflare"`
+	DigitalOcean *UsernamePasswordCredentials `json:"digitalocean"`
 }
 
 func readJamesfile() (*Jamesfile, error) {
