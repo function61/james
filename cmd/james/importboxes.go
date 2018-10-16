@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	terraformFileName = "terraform.tfstate"
+	terraformFileName = "iac-nodes/terraform.tfstate"
 )
 
 func importBoxesEntry() *cobra.Command {
