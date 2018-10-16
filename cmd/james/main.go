@@ -34,7 +34,10 @@ func runSshBash(addr string, username string, bashScript string, stdout io.Write
 var swarmTokenParseRegex = regexp.MustCompile("(SWMTKN-1-[^ ]+)")
 
 func bootstrap(box *BoxDefinition, jamesfile *Jamesfile) error {
-	managerBox, _ := jamesfile.findBoxByName(jamesfile.SwarmManagerName)
+	managerBox, err := jamesfile.findBoxByName(jamesfile.SwarmManagerName)
+	if err != nil {
+		return err
+	}
 
 	bootstrappingManagerBox := managerBox == nil
 
