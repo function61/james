@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	terraformFileName = "iac-nodes/terraform.tfstate"
+	terraformFileName = "iac-boxes/terraform.tfstate"
 )
 
 func digitalOceanBoxDefinitionResolver(resource TerraformResource) *BoxDefinition {

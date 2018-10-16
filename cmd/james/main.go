@@ -148,6 +148,14 @@ func boxesEntry() *cobra.Command {
 	}
 
 	cmd.AddCommand(importBoxesEntry())
+	cmd.AddCommand(&cobra.Command{
+		Use:   "console",
+		Short: "Enters box management console",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			iacCommon("boxes")
+		},
+	})
 
 	return cmd
 }
@@ -165,6 +173,7 @@ func main() {
 	app.AddCommand(sshEntry())
 	app.AddCommand(portainerEntry())
 	app.AddCommand(iacEntry())
+	app.AddCommand(dnsEntry())
 
 	if err := app.Execute(); err != nil {
 		fmt.Println(err)
