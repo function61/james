@@ -12,6 +12,34 @@ const (
 	terraformFileName = "iac-nodes/terraform.tfstate"
 )
 
+func digitalOceanBoxDefinitionResolver(resource TerraformResource) *BoxDefinition {
+	if resource.Type != "digitalocean_droplet" {
+		return nil
+	}
+
+	return &BoxDefinition{
+		Name:     resource.Primary.Attributes["name"],
+		Addr:     resource.Primary.Attributes["ipv4_address"],
+		Username: "core", // FIXME: assumption about underlying image
+	}
+}
+
+type boxDefinitionResolver func(TerraformResource) *BoxDefinition
+
+var boxDefinitionResolvers = []boxDefinitionResolver{
+	digitalOceanBoxDefinitionResolver,
+}
+
+func boxByNameExists(hostname string, jamesfile *Jamesfile) bool {
+	for _, box := range jamesfile.Boxes {
+		if box.Name == hostname {
+			return true
+		}
+	}
+
+	return false
+}
+
 func importBoxesEntry() *cobra.Command {
 	return &cobra.Command{
 		Use:   "import",
@@ -21,11 +49,7 @@ func importBoxesEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			if len(jamesfile.Boxes) != 0 {
-				reactToError(errors.New("jamesfile.Boxes not empty"))
-			}
-
-			foundBoxes := []BoxDefinition{}
+			newBoxesFound := []BoxDefinition{}
 
 			terraformFile, err := os.Open(terraformFileName)
 			reactToError(err)
@@ -36,32 +60,35 @@ func importBoxesEntry() *cobra.Command {
 
 			for _, module := range tf.Modules {
 				for _, resource := range module.Resources {
-					if resource.Type != "digitalocean_droplet" {
-						continue
-					}
+					for _, resolver := range boxDefinitionResolvers {
+						boxDefinition := resolver(resource)
+						if boxDefinition != nil {
+							isNewBox := !boxByNameExists(boxDefinition.Name, jamesfile)
 
-					foundBoxes = append(foundBoxes, BoxDefinition{
-						Name:     resource.Primary.Attributes["name"],
-						Addr:     resource.Primary.Attributes["ipv4_address"],
-						Username: "core", // FIXME: assumption about underlying image
-					})
+							if isNewBox {
+								newBoxesFound = append(newBoxesFound, *boxDefinition)
+							}
+
+							break // no need to try other resolvers
+						}
+					}
 				}
 			}
 
-			if len(foundBoxes) == 0 {
-				reactToError(errors.New("no boxes found"))
+			if len(newBoxesFound) == 0 {
+				reactToError(errors.New("no new boxes found"))
 			}
 
-			jamesfile.Boxes = append(jamesfile.Boxes, foundBoxes...)
+			jamesfile.Boxes = append(jamesfile.Boxes, newBoxesFound...)
 
 			reactToError(writeJamesfile(jamesfile))
 
-			fmt.Printf("Updated Jamesfile with %d boxes\n", len(foundBoxes))
+			fmt.Printf("Updated Jamesfile with %d boxes\nRemember to bootstrap added boxes\n", len(newBoxesFound))
 		},
 	}
 }
 
-// TODO: import these from Terraform
+// TODO: piggyback Terraform data structures
 
 type TerraformResourcePrimary struct {
 	Id         string            `json:"id"`
