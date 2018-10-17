@@ -30,6 +30,7 @@ func portainerDeploy() error {
 		"--name", "portainer",
 		"-p", "9000:9000",
 		"-v", "portainer_data:/data",
+		"--restart", "always",
 		"portainer/portainer")
 
 	startPortainer.Stdout = os.Stdout
