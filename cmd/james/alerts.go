@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"github.com/apcera/termtables"
 	"github.com/spf13/cobra"
+	"net/http"
 	"strings"
 	"time"
 )
 
 func alertsList(jamesfile *Jamesfile) error {
-	var alerts GetAlertsResponse
+	alerts := GetAlertsResponse{}
 	if err := httpGetJson(jamesfile.AlertManagerEndpoint+"/alerts", &alerts); err != nil {
 		return err
 	}
@@ -39,7 +40,7 @@ func alertsAck(key string, jamesfile *Jamesfile) error {
 		Key: key,
 	}
 
-	if err := httpPostJson(jamesfile.AlertManagerEndpoint+"/alerts/acknowledge", ackRequest); err != nil {
+	if err := httpJson(http.MethodPost, jamesfile.AlertManagerEndpoint+"/alerts/acknowledge", ackRequest); err != nil {
 		return err
 	}
 

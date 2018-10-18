@@ -169,6 +169,7 @@ func main() {
 
 	app.AddCommand(bootstrapEntry())
 	app.AddCommand(alertEntry())
+	app.AddCommand(monitorsEntry())
 	app.AddCommand(boxesEntry())
 	app.AddCommand(sshEntry())
 	app.AddCommand(portainerEntry())

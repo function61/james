@@ -13,6 +13,17 @@
   revision = "bcbc5dc54055d14996b256d348fb75cc6debe282"
 
 [[projects]]
+  branch = "master"
+  digest = "1:a3e5ba76fe3f160b0eb3aa74c97c9b67c97b730d74e955af66a63233232aa2c7"
+  name = "github.com/function61/gokit"
+  packages = [
+    "assert",
+    "cryptorandombytes",
+  ]
+  pruneopts = "UT"
+  revision = "0f34012cddcd916aa9fdb92a9d8abc2e909e97c3"
+
+[[projects]]
   digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
@@ -66,6 +77,8 @@
   analyzer-version = 1
   input-imports = [
     "github.com/apcera/termtables",
+    "github.com/function61/gokit/assert",
+    "github.com/function61/gokit/cryptorandombytes",
     "github.com/spf13/cobra",
     "golang.org/x/crypto/ssh",
     "golang.org/x/crypto/ssh/agent",

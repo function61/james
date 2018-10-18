@@ -23,6 +23,7 @@ type Jamesfile struct {
 	InfrastructureAsCodeImageVersion string          `json:"InfrastructureAsCodeImageVersion"`
 	DockerSockProxyServerCertKey     string          `json:"DockerSockProxyServerCertKey"`
 	DockerSockProxyVersion           string          `json:"DockerSockProxyVersion"`
+	CanaryEndpoint                   string          `json:"canary_endpoint"`
 	Credentials                      Credentials     `json:"credentials"`
 	Boxes                            []BoxDefinition `json:"boxes"`
 }

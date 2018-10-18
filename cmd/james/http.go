@@ -7,13 +7,13 @@ import (
 	"net/http"
 )
 
-func httpPostJson(url string, body interface{}) error {
+func httpJson(method string, url string, body interface{}) error {
 	bodyAsJson := &bytes.Buffer{}
 	if err := json.NewEncoder(bodyAsJson).Encode(body); err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", url, bodyAsJson)
+	req, err := http.NewRequest(method, url, bodyAsJson)
 	if err != nil {
 		return err
 	}
