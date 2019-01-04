@@ -168,14 +168,20 @@ func main() {
 		Version: version,
 	}
 
-	app.AddCommand(bootstrapEntry())
-	app.AddCommand(alertEntry())
-	app.AddCommand(monitorsEntry())
-	app.AddCommand(boxesEntry())
-	app.AddCommand(sshEntry())
-	app.AddCommand(portainerEntry())
-	app.AddCommand(iacEntry())
-	app.AddCommand(dnsEntry())
+	commands := []*cobra.Command{
+		bootstrapEntry(),
+		alertEntry(),
+		monitorsEntry(),
+		boxesEntry(),
+		sshEntry(),
+		portainerEntry(),
+		iacEntry(),
+		dnsEntry(),
+	}
+
+	for _, cmd := range commands {
+		app.AddCommand(cmd)
+	}
 
 	if err := app.Execute(); err != nil {
 		fmt.Println(err)
