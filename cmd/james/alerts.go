@@ -1,17 +1,25 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/apcera/termtables"
+	"github.com/function61/gokit/ezhttp"
 	"github.com/spf13/cobra"
-	"net/http"
 	"strings"
 	"time"
 )
 
 func alertsList(jamesfile *Jamesfile) error {
+	ctx, cancel := context.WithTimeout(context.TODO(), ezhttp.DefaultTimeout10s)
+	defer cancel()
+
 	alerts := GetAlertsResponse{}
-	if err := httpGetJson(jamesfile.AlertManagerEndpoint+"/alerts", &alerts); err != nil {
+	if _, err := ezhttp.Get(
+		ctx,
+		jamesfile.AlertManagerEndpoint+"/alerts",
+		ezhttp.RespondsJson(&alerts, true),
+	); err != nil {
 		return err
 	}
 
@@ -40,11 +48,14 @@ func alertsAck(key string, jamesfile *Jamesfile) error {
 		Key: key,
 	}
 
-	if err := httpJson(http.MethodPost, jamesfile.AlertManagerEndpoint+"/alerts/acknowledge", ackRequest); err != nil {
-		return err
-	}
+	ctx, cancel := context.WithTimeout(context.TODO(), ezhttp.DefaultTimeout10s)
+	defer cancel()
+	_, err := ezhttp.Post(
+		ctx,
+		jamesfile.AlertManagerEndpoint+"/alerts/acknowledge",
+		ezhttp.SendJson(ackRequest))
 
-	return nil
+	return err
 }
 
 func alertEntry() *cobra.Command {

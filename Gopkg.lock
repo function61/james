@@ -14,14 +14,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a3e5ba76fe3f160b0eb3aa74c97c9b67c97b730d74e955af66a63233232aa2c7"
+  digest = "1:c326894889d62df721675f5a00c3b73e3632618acc8c53adc3c61db9dd7ca006"
   name = "github.com/function61/gokit"
   packages = [
     "assert",
     "cryptorandombytes",
+    "ezhttp",
   ]
   pruneopts = "UT"
-  revision = "0f34012cddcd916aa9fdb92a9d8abc2e909e97c3"
+  revision = "7397b370de1295275a4670bce87cc8f5f64e33fa"
 
 [[projects]]
   digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
@@ -79,6 +80,7 @@
     "github.com/apcera/termtables",
     "github.com/function61/gokit/assert",
     "github.com/function61/gokit/cryptorandombytes",
+    "github.com/function61/gokit/ezhttp",
     "github.com/spf13/cobra",
     "golang.org/x/crypto/ssh",
     "golang.org/x/crypto/ssh/agent",

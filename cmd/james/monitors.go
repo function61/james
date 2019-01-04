@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/apcera/termtables"
 	"github.com/function61/gokit/cryptorandombytes"
+	"github.com/function61/gokit/ezhttp"
 	"github.com/spf13/cobra"
-	"net/http"
 )
 
 var (
@@ -223,7 +224,12 @@ func getConfig(jamesfile *Jamesfile) (*Config, error) {
 	}
 
 	config := &Config{}
-	if err := httpGetJson(configEndpoint, config); err != nil {
+
+	ctx, cancel := context.WithTimeout(context.TODO(), ezhttp.DefaultTimeout10s)
+	defer cancel()
+
+	// can't allow unknown fields in JSON because since we're doing mutations, we could lose data
+	if _, err := ezhttp.Get(ctx, configEndpoint, ezhttp.RespondsJson(config, false)); err != nil {
 		return nil, err
 	}
 
@@ -236,5 +242,10 @@ func setConfig(config *Config, jamesfile *Jamesfile) error {
 		return err
 	}
 
-	return httpJson(http.MethodPut, configEndpoint, config)
+	ctx, cancel := context.WithTimeout(context.TODO(), ezhttp.DefaultTimeout10s)
+	defer cancel()
+
+	_, err = ezhttp.Put(ctx, configEndpoint, ezhttp.SendJson(config))
+
+	return err
 }
