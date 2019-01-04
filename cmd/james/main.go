@@ -51,7 +51,8 @@ func bootstrap(box *BoxDefinition, jamesfile *Jamesfile) error {
 
 docker swarm init --advertise-addr %s --listen-addr %s
 
-docker network create --driver overlay --attachable fn61
+# for some reason we've to opt-in for encryption..
+docker network create --driver overlay --opt encrypted --attachable fn61
 
 SERVERCERT_KEY="%s"
 DOCKERSOCKPROXY_VERSION="%s"
