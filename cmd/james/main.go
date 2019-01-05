@@ -26,9 +26,8 @@ func runSshBash(addr string, username string, bashScript string, stdout io.Write
 	sshSession.Stdin = bytes.NewBufferString(bashScript)
 	sshSession.Stdout = stdout
 	sshSession.Stderr = os.Stderr
-	reactToError(sshSession.Run("/bin/bash"))
 
-	return nil
+	return sshSession.Run("/bin/bash")
 }
 
 var swarmTokenParseRegex = regexp.MustCompile("(SWMTKN-1-[^ ]+)")
