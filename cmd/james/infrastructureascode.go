@@ -39,9 +39,7 @@ func iacEntry() *cobra.Command {
 	}
 }
 
-func iacCommon(namespaceId string) {
-	namespace := "iac-" + namespaceId
-
+func iacCommon(namespace string) {
 	jamesfile, err := readJamesfile()
 	reactToError(err)
 
@@ -61,14 +59,14 @@ func iacCommon(namespaceId string) {
 		"--rm",
 		"-it",
 		// for Packer
-		"-e", "DIGITALOCEAN_API_TOKEN=" + jamesfile.Credentials.DigitalOcean.Password,
+		"-e", "DIGITALOCEAN_API_TOKEN=" + jamesfile.File.Credentials.DigitalOcean.Password,
 		// for Terraform (yes, different key for same thing)
-		"-e", "DIGITALOCEAN_TOKEN=" + jamesfile.Credentials.DigitalOcean.Password,
-		"-e", "CLOUDFLARE_EMAIL=" + jamesfile.Credentials.Cloudflare.Username,
-		"-e", "CLOUDFLARE_TOKEN=" + jamesfile.Credentials.Cloudflare.Password,
-		"-e", "AWS_ACCESS_KEY_ID=" + jamesfile.Credentials.AWS.Username,
-		"-e", "AWS_SECRET_ACCESS_KEY=" + jamesfile.Credentials.AWS.Password,
-		"-v", cwd + "/scripts:/work/scripts",
+		"-e", "DIGITALOCEAN_TOKEN=" + jamesfile.File.Credentials.DigitalOcean.Password,
+		"-e", "CLOUDFLARE_EMAIL=" + jamesfile.File.Credentials.Cloudflare.Username,
+		"-e", "CLOUDFLARE_TOKEN=" + jamesfile.File.Credentials.Cloudflare.Password,
+		"-e", "AWS_ACCESS_KEY_ID=" + jamesfile.File.Credentials.AWS.Username,
+		"-e", "AWS_SECRET_ACCESS_KEY=" + jamesfile.File.Credentials.AWS.Password,
+		"-v", pathToNamespaceFile("state/") + ":/work/state/", // state directory
 		"-v", pathToNamespaceFile("terraform.tfstate") + ":/work/terraform.tfstate",
 		"-v", pathToNamespaceFile("terraform.tfstate.backup") + ":/work/terraform.tfstate.backup",
 	}
@@ -89,7 +87,7 @@ func iacCommon(namespaceId string) {
 		dockerArgs = append(dockerArgs, "-v", mapping)
 	}
 
-	dockerArgs = append(dockerArgs, jamesfile.InfrastructureAsCodeImageVersion)
+	dockerArgs = append(dockerArgs, jamesfile.File.InfrastructureAsCodeImageVersion)
 
 	fmt.Printf("Entering infrastructure-as-code container. Press ctrl+c to exit\n")
 

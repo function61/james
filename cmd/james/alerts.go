@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func alertsList(jamesfile *Jamesfile) error {
+func alertsList(jamesfile Jamesfile) error {
 	ctx, cancel := context.WithTimeout(context.TODO(), ezhttp.DefaultTimeout10s)
 	defer cancel()
 
@@ -43,7 +43,7 @@ func alertsList(jamesfile *Jamesfile) error {
 	return nil
 }
 
-func alertsAck(key string, jamesfile *Jamesfile) error {
+func alertsAck(key string, jamesfile Jamesfile) error {
 	ackRequest := &AcknowledgeAlertRequest{
 		Key: key,
 	}
@@ -67,7 +67,7 @@ func alertEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			reactToError(alertsList(jamesfile))
+			reactToError(alertsList(jamesfile.File))
 		},
 	}
 
@@ -79,7 +79,7 @@ func alertEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			reactToError(alertsAck(args[0], jamesfile))
+			reactToError(alertsAck(args[0], jamesfile.File))
 		},
 	})
 

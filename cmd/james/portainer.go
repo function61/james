@@ -7,7 +7,7 @@ import (
 	"os/exec"
 )
 
-func portainerDetails(jamesfile *Jamesfile) {
+func portainerDetails(jamesfile *JamesfileCtx) {
 	fmt.Printf(
 		"Portainer connection details:\n"+
 			"                  Name: %s\n"+
@@ -17,9 +17,9 @@ func portainerDetails(jamesfile *Jamesfile) {
 			"    TLS CA certificate: Download from https://fn61.net/ca.crt\n"+
 			"       TLS certificate: client-bundle.crt\n"+
 			"               TLS key: client-bundle.crt\n",
-		jamesfile.ClusterID,
-		jamesfile.ClusterID,
-		jamesfile.Domain)
+		jamesfile.Cluster.ID,
+		jamesfile.Cluster.ID,
+		jamesfile.File.Domain)
 }
 
 func portainerDeploy() error {

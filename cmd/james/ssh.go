@@ -28,7 +28,7 @@ func sshClientConfig(username string) *ssh.ClientConfig {
 	}
 }
 
-func doSsh(servname string, jamesfile *Jamesfile) error {
+func doSsh(servname string, jamesfile *JamesfileCtx) error {
 	box, errFindBox := jamesfile.findBoxByName(servname)
 	if errFindBox != nil {
 		return errFindBox

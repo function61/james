@@ -20,6 +20,7 @@
     "assert",
     "cryptorandombytes",
     "ezhttp",
+    "jsonfile",
   ]
   pruneopts = "UT"
   revision = "7397b370de1295275a4670bce87cc8f5f64e33fa"

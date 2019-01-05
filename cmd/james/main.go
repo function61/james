@@ -34,10 +34,15 @@ func runSshBash(addr string, username string, bashScript string, stdout io.Write
 
 var swarmTokenParseRegex = regexp.MustCompile("(SWMTKN-1-[^ ]+)")
 
-func bootstrap(box *BoxDefinition, jamesfile *Jamesfile) error {
-	managerBox, err := jamesfile.findBoxByName(jamesfile.SwarmManagerName)
-	if err != nil {
-		return err
+func bootstrap(box *BoxDefinition, jamesfile *JamesfileCtx) error {
+	var managerBox *BoxDefinition
+
+	if jamesfile.Cluster.SwarmManagerName != "" {
+		var err error
+		managerBox, err = jamesfile.findBoxByName(jamesfile.Cluster.SwarmManagerName)
+		if err != nil {
+			return err
+		}
 	}
 
 	bootstrappingManagerBox := managerBox == nil
@@ -70,8 +75,8 @@ docker service create \
 `,
 			box.Addr,
 			box.Addr,
-			jamesfile.DockerSockProxyServerCertKey,
-			jamesfile.DockerSockProxyVersion)
+			jamesfile.File.DockerSockProxyServerCertKey,
+			jamesfile.File.DockerSockProxyVersion)
 	} else {
 		log.Printf("Bootstrapping worker %s", box.Addr)
 
@@ -79,7 +84,7 @@ docker service create \
 			`set -eu
 
 docker swarm join --token %s %s:2377`,
-			jamesfile.SwarmJoinTokenWorker,
+			jamesfile.Cluster.SwarmJoinTokenWorker,
 			managerBox.Addr)
 	}
 
@@ -104,10 +109,10 @@ docker swarm join --token %s %s:2377`,
 		token := match[1]
 
 		// update manager details to jamesfile
-		jamesfile.SwarmManagerName = box.Name
-		jamesfile.SwarmJoinTokenWorker = token
+		jamesfile.Cluster.SwarmManagerName = box.Name
+		jamesfile.Cluster.SwarmJoinTokenWorker = token
 
-		if err := writeJamesfile(jamesfile); err != nil {
+		if err := writeJamesfile(&jamesfile.File); err != nil {
 			return err
 		}
 
@@ -119,32 +124,32 @@ docker swarm join --token %s %s:2377`,
 
 func bootstrapEntry() *cobra.Command {
 	return &cobra.Command{
-		Use:   "bootstrap [server]",
-		Short: "Bootstraps a server",
+		Use:   "bootstrap [hostname]",
+		Short: "Bootstraps a node",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			box, errFindBox := jamesfile.findBoxByName(args[0])
+			node, errFindBox := jamesfile.findBoxByName(args[0])
 			reactToError(errFindBox)
 
-			reactToError(bootstrap(box, jamesfile))
+			reactToError(bootstrap(node, jamesfile))
 		},
 	}
 }
 
 func boxesEntry() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "boxes",
-		Short: "List boxes",
+		Use:   "nodes",
+		Short: "List nodes",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			for _, box := range jamesfile.Boxes {
-				fmt.Printf("%s\n", box.Name)
+			for _, node := range jamesfile.Cluster.Nodes {
+				fmt.Printf("%s\n", node.Name)
 			}
 		},
 	}
@@ -152,10 +157,10 @@ func boxesEntry() *cobra.Command {
 	cmd.AddCommand(importBoxesEntry())
 	cmd.AddCommand(&cobra.Command{
 		Use:   "console",
-		Short: "Enters box management console",
+		Short: "Enters node management console",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			iacCommon("boxes")
+			iacCommon("nodes")
 		},
 	})
 

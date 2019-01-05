@@ -3,10 +3,13 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/function61/gokit/jsonfile"
 	"os"
+	"path/filepath"
 )
 
-const jamesfileFilename = "jamesfile.json"
+const jamesfileFilename = "../jamesfile.json"
 
 type BoxDefinition struct {
 	Name     string `json:"Name"`
@@ -15,17 +18,21 @@ type BoxDefinition struct {
 }
 
 type Jamesfile struct {
-	ClusterID                        string          `json:"ClusterID"`
-	Domain                           string          `json:"Domain"`
-	SwarmManagerName                 string          `json:"SwarmManagerName"`
-	SwarmJoinTokenWorker             string          `json:"SwarmJoinTokenWorker"`
-	AlertManagerEndpoint             string          `json:"AlertManagerEndpoint"`
-	InfrastructureAsCodeImageVersion string          `json:"InfrastructureAsCodeImageVersion"`
-	DockerSockProxyServerCertKey     string          `json:"DockerSockProxyServerCertKey"`
-	DockerSockProxyVersion           string          `json:"DockerSockProxyVersion"`
-	CanaryEndpoint                   string          `json:"canary_endpoint"`
-	Credentials                      Credentials     `json:"credentials"`
-	Boxes                            []BoxDefinition `json:"boxes"`
+	Domain                           string                    `json:"domain"`
+	Clusters                         map[string]*ClusterConfig `json:"clusters"`
+	AlertManagerEndpoint             string                    `json:"AlertManagerEndpoint"`
+	InfrastructureAsCodeImageVersion string                    `json:"InfrastructureAsCodeImageVersion"`
+	DockerSockProxyServerCertKey     string                    `json:"DockerSockProxyServerCertKey"`
+	DockerSockProxyVersion           string                    `json:"DockerSockProxyVersion"`
+	CanaryEndpoint                   string                    `json:"canary_endpoint"`
+	Credentials                      Credentials               `json:"credentials"`
+}
+
+type ClusterConfig struct {
+	ID                   string          `json:"id"`
+	SwarmManagerName     string          `json:"swarm_manager_name"`
+	SwarmJoinTokenWorker string          `json:"swarm_jointoken_worker"`
+	Nodes                []BoxDefinition `json:"nodes"`
 }
 
 type UsernamePasswordCredentials struct {
@@ -38,22 +45,33 @@ type Credentials struct {
 	DigitalOcean *UsernamePasswordCredentials `json:"digitalocean"`
 }
 
-func readJamesfile() (*Jamesfile, error) {
-	file, err := os.Open(jamesfileFilename)
+type JamesfileCtx struct {
+	File      Jamesfile
+	ClusterID string
+	Cluster   *ClusterConfig
+}
+
+func readJamesfile() (*JamesfileCtx, error) {
+	jf := Jamesfile{}
+	if err := jsonfile.Read(jamesfileFilename, &jf, true); err != nil {
+		return nil, err
+	}
+
+	wd, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
 
-	jsonDecoder := json.NewDecoder(file)
-	jsonDecoder.DisallowUnknownFields()
-
-	jf := &Jamesfile{}
-	if err := jsonDecoder.Decode(jf); err != nil {
-		return nil, err
+	clusterId := filepath.Base(wd)
+	if _, exists := jf.Clusters[clusterId]; !exists {
+		return nil, fmt.Errorf("unknown cluster: %s", clusterId)
 	}
 
-	return jf, nil
+	return &JamesfileCtx{
+		File:      jf,
+		ClusterID: clusterId,
+		Cluster:   jf.Clusters[clusterId],
+	}, nil
 }
 
 func writeJamesfile(jamesfile *Jamesfile) error {
@@ -72,14 +90,14 @@ func writeJamesfile(jamesfile *Jamesfile) error {
 	return nil
 }
 
-func (j *Jamesfile) findBoxByName(name string) (*BoxDefinition, error) {
-	for _, box := range j.Boxes {
-		if box.Name == name {
-			return &box, nil
+func (j *JamesfileCtx) findBoxByName(name string) (*BoxDefinition, error) {
+	for _, node := range j.File.Clusters[j.ClusterID].Nodes {
+		if node.Name == name {
+			return &node, nil
 		}
 	}
 
-	return nil, errors.New("box not found: " + name)
+	return nil, errors.New("Node not found: " + name)
 }
 
 func reactToError(err error) {

@@ -15,7 +15,7 @@ var (
 	errCanaryNotConfigured = errors.New("canary not configured")
 )
 
-func monitorsList(jamesfile *Jamesfile) error {
+func monitorsList(jamesfile Jamesfile) error {
 	config, err := getConfig(jamesfile)
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func monitorsList(jamesfile *Jamesfile) error {
 	return nil
 }
 
-func monitorsCreate(url string, findString string, jamesfile *Jamesfile) error {
+func monitorsCreate(url string, findString string, jamesfile Jamesfile) error {
 	config, err := getConfig(jamesfile)
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func monitorsCreate(url string, findString string, jamesfile *Jamesfile) error {
 	return setConfig(config, jamesfile)
 }
 
-func monitorsDelete(id string, jamesfile *Jamesfile) error {
+func monitorsDelete(id string, jamesfile Jamesfile) error {
 	config, err := getConfig(jamesfile)
 	if err != nil {
 		return err
@@ -75,7 +75,7 @@ func monitorsDelete(id string, jamesfile *Jamesfile) error {
 	return setConfig(config, jamesfile)
 }
 
-func monitorsEnableOrDisable(id string, enable bool, jamesfile *Jamesfile) error {
+func monitorsEnableOrDisable(id string, enable bool, jamesfile Jamesfile) error {
 	config, err := getConfig(jamesfile)
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func monitorsEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			reactToError(monitorsList(jamesfile))
+			reactToError(monitorsList(jamesfile.File))
 		},
 	})
 
@@ -117,7 +117,7 @@ func monitorsEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			reactToError(monitorsCreate(args[0], args[1], jamesfile))
+			reactToError(monitorsCreate(args[0], args[1], jamesfile.File))
 		},
 	})
 
@@ -129,7 +129,7 @@ func monitorsEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			reactToError(monitorsDelete(args[0], jamesfile))
+			reactToError(monitorsDelete(args[0], jamesfile.File))
 		},
 	})
 
@@ -141,7 +141,7 @@ func monitorsEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			reactToError(monitorsEnableOrDisable(args[0], true, jamesfile))
+			reactToError(monitorsEnableOrDisable(args[0], true, jamesfile.File))
 		},
 	})
 
@@ -153,7 +153,7 @@ func monitorsEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			reactToError(monitorsEnableOrDisable(args[0], false, jamesfile))
+			reactToError(monitorsEnableOrDisable(args[0], false, jamesfile.File))
 		},
 	})
 
@@ -197,7 +197,7 @@ func deleteMonitor(id string, monitors []Monitor) ([]Monitor, error) {
 	return nil, errUnableToFindMonitor
 }
 
-func configEndpointFor(jamesfile *Jamesfile) (string, error) {
+func configEndpointFor(jamesfile Jamesfile) (string, error) {
 	if jamesfile.CanaryEndpoint == "" {
 		return "", errCanaryNotConfigured
 	}
@@ -217,7 +217,7 @@ type Monitor struct {
 	Find    string `json:"find"`
 }
 
-func getConfig(jamesfile *Jamesfile) (*Config, error) {
+func getConfig(jamesfile Jamesfile) (*Config, error) {
 	configEndpoint, err := configEndpointFor(jamesfile)
 	if err != nil {
 		return nil, err
@@ -236,7 +236,7 @@ func getConfig(jamesfile *Jamesfile) (*Config, error) {
 	return config, nil
 }
 
-func setConfig(config *Config, jamesfile *Jamesfile) error {
+func setConfig(config *Config, jamesfile Jamesfile) error {
 	configEndpoint, err := configEndpointFor(jamesfile)
 	if err != nil {
 		return err

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	terraformFileName = "iac-boxes/terraform.tfstate"
+	terraformFileName = "nodes/terraform.tfstate"
 )
 
 func digitalOceanBoxDefinitionResolver(resource TerraformResource) *BoxDefinition {
@@ -28,16 +28,6 @@ type boxDefinitionResolver func(TerraformResource) *BoxDefinition
 
 var boxDefinitionResolvers = []boxDefinitionResolver{
 	digitalOceanBoxDefinitionResolver,
-}
-
-func boxByNameExists(hostname string, jamesfile *Jamesfile) bool {
-	for _, box := range jamesfile.Boxes {
-		if box.Name == hostname {
-			return true
-		}
-	}
-
-	return false
 }
 
 func importBoxesEntry() *cobra.Command {
@@ -63,7 +53,8 @@ func importBoxesEntry() *cobra.Command {
 					for _, resolver := range boxDefinitionResolvers {
 						boxDefinition := resolver(resource)
 						if boxDefinition != nil {
-							isNewBox := !boxByNameExists(boxDefinition.Name, jamesfile)
+							existingBox, _ := jamesfile.findBoxByName(boxDefinition.Name)
+							isNewBox := existingBox == nil
 
 							if isNewBox {
 								newBoxesFound = append(newBoxesFound, *boxDefinition)
@@ -79,9 +70,9 @@ func importBoxesEntry() *cobra.Command {
 				reactToError(errors.New("no new boxes found"))
 			}
 
-			jamesfile.Boxes = append(jamesfile.Boxes, newBoxesFound...)
+			jamesfile.Cluster.Nodes = append(jamesfile.Cluster.Nodes, newBoxesFound...)
 
-			reactToError(writeJamesfile(jamesfile))
+			reactToError(writeJamesfile(&jamesfile.File))
 
 			fmt.Printf("Updated Jamesfile with %d boxes\nRemember to bootstrap added boxes\n", len(newBoxesFound))
 		},
