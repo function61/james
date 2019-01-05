@@ -58,18 +58,14 @@ func iacCommon(namespace string) {
 		"run",
 		"--rm",
 		"-it",
-		// for Packer
-		"-e", "DIGITALOCEAN_API_TOKEN=" + jamesfile.File.Credentials.DigitalOcean.Password,
-		// for Terraform (yes, different key for same thing)
-		"-e", "DIGITALOCEAN_TOKEN=" + jamesfile.File.Credentials.DigitalOcean.Password,
-		"-e", "CLOUDFLARE_EMAIL=" + jamesfile.File.Credentials.Cloudflare.Username,
-		"-e", "CLOUDFLARE_TOKEN=" + jamesfile.File.Credentials.Cloudflare.Password,
-		"-e", "AWS_ACCESS_KEY_ID=" + jamesfile.File.Credentials.AWS.Username,
-		"-e", "AWS_SECRET_ACCESS_KEY=" + jamesfile.File.Credentials.AWS.Password,
-		"-e", "HCLOUD_TOKEN=" + string(*jamesfile.File.Credentials.Hetzner),
 		"-v", pathToNamespaceFile("state/") + ":/work/state/", // state directory
 		"-v", pathToNamespaceFile("terraform.tfstate") + ":/work/terraform.tfstate",
 		"-v", pathToNamespaceFile("terraform.tfstate.backup") + ":/work/terraform.tfstate.backup",
+	}
+
+	// expose all API credentials needed by Terraform/Packer
+	for key, value := range credentialsToTerraformAndPackerEnvs(jamesfile.File.Credentials) {
+		dockerArgs = append(dockerArgs, "-e", key+"="+value)
 	}
 
 	tfFilesFromNamespace, err := filepath.Glob(namespace + "/*.tf")
@@ -116,4 +112,31 @@ func touch(path string) error {
 	}
 
 	return nil
+}
+
+func credentialsToTerraformAndPackerEnvs(creds Credentials) map[string]string {
+	envs := map[string]string{}
+
+	if creds.DigitalOcean != nil {
+		// 1st is for Packer
+		// 2nd for Terraform (yes, different key for same thing)
+		envs["DIGITALOCEAN_API_TOKEN"] = creds.DigitalOcean.Password
+		envs["DIGITALOCEAN_TOKEN"] = creds.DigitalOcean.Password
+	}
+
+	if creds.Cloudflare != nil {
+		envs["CLOUDFLARE_EMAIL"] = creds.Cloudflare.Username
+		envs["CLOUDFLARE_TOKEN"] = creds.Cloudflare.Password
+	}
+
+	if creds.AWS != nil {
+		envs["AWS_ACCESS_KEY_ID"] = creds.AWS.Username
+		envs["AWS_SECRET_ACCESS_KEY"] = creds.AWS.Password
+	}
+
+	if creds.Hetzner != nil {
+		envs["HCLOUD_TOKEN"] = string(*creds.Hetzner)
+	}
+
+	return envs
 }
