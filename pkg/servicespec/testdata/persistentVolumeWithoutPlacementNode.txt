@@ -1,0 +1,17 @@
+stack = "hellohttp"
+
+service {
+  name = "hellohttp"
+  image = "joonas/hellohttp"
+  version = "v2"
+  how_to_update = "parallel-one-at-a-time"
+  ram_mb = 16
+
+  persistentvolume {
+    name = "data"
+    target = "/data"
+  }
+}
+
+-------------
+ERROR: persistent volumes defined but no placement hostname defined

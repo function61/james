@@ -183,6 +183,7 @@ func main() {
 		portainerEntry(),
 		iacEntry(),
 		dnsEntry(),
+		specToComposeEntry(),
 	}
 
 	for _, cmd := range commands {

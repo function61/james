@@ -13,17 +13,52 @@
   revision = "bcbc5dc54055d14996b256d348fb75cc6debe282"
 
 [[projects]]
+  digest = "1:f0a18884b6dca4d8337fbd84f165c15e8189dee62982b0ca44ba0f6603a75b41"
+  name = "github.com/docker/cli"
+  packages = ["cli/compose/types"]
+  pruneopts = "UT"
+  revision = "51668a30f26250ccfce31bcc13d9334eaafabe36"
+  version = "v18.09.0"
+
+[[projects]]
   branch = "master"
-  digest = "1:c326894889d62df721675f5a00c3b73e3632618acc8c53adc3c61db9dd7ca006"
+  digest = "1:7507ec8f721b55fe3b629ecb4f8653c6352d2a829a4a74e03ee2aef2f7fb6e2b"
   name = "github.com/function61/gokit"
   packages = [
     "assert",
     "cryptorandombytes",
+    "envvar",
     "ezhttp",
     "jsonfile",
   ]
   pruneopts = "UT"
   revision = "7397b370de1295275a4670bce87cc8f5f64e33fa"
+
+[[projects]]
+  digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
+  name = "github.com/go-yaml/yaml"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
+  version = "v2.2.2"
+
+[[projects]]
+  digest = "1:ea40c24cdbacd054a6ae9de03e62c5f252479b96c716375aace5c120d68647c8"
+  name = "github.com/hashicorp/hcl"
+  packages = [
+    ".",
+    "hcl/ast",
+    "hcl/parser",
+    "hcl/scanner",
+    "hcl/strconv",
+    "hcl/token",
+    "json/parser",
+    "json/scanner",
+    "json/token",
+  ]
+  pruneopts = "UT"
+  revision = "8cb6e5b959231cc1119e43259c4a608f9c51a241"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
@@ -79,9 +114,14 @@
   analyzer-version = 1
   input-imports = [
     "github.com/apcera/termtables",
+    "github.com/docker/cli/cli/compose/types",
     "github.com/function61/gokit/assert",
     "github.com/function61/gokit/cryptorandombytes",
+    "github.com/function61/gokit/envvar",
     "github.com/function61/gokit/ezhttp",
+    "github.com/function61/gokit/jsonfile",
+    "github.com/go-yaml/yaml",
+    "github.com/hashicorp/hcl",
     "github.com/spf13/cobra",
     "golang.org/x/crypto/ssh",
     "golang.org/x/crypto/ssh/agent",

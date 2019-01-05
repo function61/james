@@ -1,0 +1,46 @@
+stack = "monitoring"
+
+service {
+  name = "grafana"
+  image = "fn61/grafana"
+  version = "20181220_1152_030fca37"
+  how_to_update = "stop-old-first"
+  placement_node_hostname = "myserver.fn61.net"
+  ingress_public = "80/Host:grafana.example.com"
+  ram_mb = 16
+
+  persistentvolume {
+    name = "perkele"
+    target = "/data"
+  }
+}
+
+-------------
+version: "3.5"
+services:
+  grafana:
+    deploy:
+      labels:
+        traefik.enable: "true"
+        traefik.frontend.entryPoints: public_https
+        traefik.frontend.rule: Host:grafana.example.com
+        traefik.port: "80"
+      update_config:
+        order: stop-first
+      resources:
+        limits:
+          memory: "16777216"
+      placement:
+        constraints:
+        - node.hostname == myserver.fn61.net
+    image: fn61/grafana:20181220_1152_030fca37
+    volumes:
+    - type: volume
+      source: perkele
+      target: /data
+networks:
+  default:
+    external:
+      name: fn61
+volumes:
+  perkele: {}

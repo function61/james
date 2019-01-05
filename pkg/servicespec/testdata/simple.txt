@@ -1,0 +1,32 @@
+stack = "hellohttp"
+
+service {
+  name = "hellohttp"
+  image = "joonas/hellohttp"
+  version = "v2"
+  how_to_update = "parallel-one-at-a-time"
+  ingress_public = "80/HostRegexp:hellohttp.com"
+  ram_mb = 16
+}
+
+-------------
+version: "3.5"
+services:
+  hellohttp:
+    deploy:
+      labels:
+        traefik.enable: "true"
+        traefik.frontend.entryPoints: public_https
+        traefik.frontend.rule: HostRegexp:hellohttp.com
+        traefik.port: "80"
+      update_config:
+        parallelism: 1
+        order: start-first
+      resources:
+        limits:
+          memory: "16777216"
+    image: joonas/hellohttp:v2
+networks:
+  default:
+    external:
+      name: fn61

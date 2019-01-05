@@ -1,0 +1,12 @@
+stack = "hellohttp"
+
+service {
+  name = "hellohttp"
+  image = "joonas/hellohttp"
+  version = "v2"
+  ingress_public = "80/HostRegexp:hellohttp.com"
+  ram_mb = 16
+}
+
+-------------
+ERROR: unknown HowToUpdate: 
