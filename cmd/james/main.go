@@ -27,7 +27,9 @@ func runSshBash(addr string, username string, bashScript string, stdout io.Write
 	sshSession.Stdout = stdout
 	sshSession.Stderr = os.Stderr
 
-	return sshSession.Run("/bin/bash")
+	// without --login with some boxes the environment (e.g. PATH) is not set up properly.
+	// alternative would probably be to hardcode full paths to binary-to-invoke
+	return sshSession.Run("/bin/bash --login")
 }
 
 var swarmTokenParseRegex = regexp.MustCompile("(SWMTKN-1-[^ ]+)")
