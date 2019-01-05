@@ -24,10 +24,23 @@ func digitalOceanBoxDefinitionResolver(resource TerraformResource) *BoxDefinitio
 	}
 }
 
+func hetznerBoxDefinitionResolver(resource TerraformResource) *BoxDefinition {
+	if resource.Type != "hcloud_server" {
+		return nil
+	}
+
+	return &BoxDefinition{
+		Name:     resource.Primary.Attributes["name"],
+		Addr:     resource.Primary.Attributes["ipv4_address"],
+		Username: "root", // FIXME: assumption about underlying image
+	}
+}
+
 type boxDefinitionResolver func(TerraformResource) *BoxDefinition
 
 var boxDefinitionResolvers = []boxDefinitionResolver{
 	digitalOceanBoxDefinitionResolver,
+	hetznerBoxDefinitionResolver,
 }
 
 func importBoxesEntry() *cobra.Command {

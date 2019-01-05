@@ -39,10 +39,14 @@ type UsernamePasswordCredentials struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+type BareTokenCredential string
+
 type Credentials struct {
 	AWS          *UsernamePasswordCredentials `json:"aws"`
 	Cloudflare   *UsernamePasswordCredentials `json:"cloudflare"`
 	DigitalOcean *UsernamePasswordCredentials `json:"digitalocean"`
+	Hetzner      *BareTokenCredential         `json:"hetzner"`
 }
 
 type JamesfileCtx struct {

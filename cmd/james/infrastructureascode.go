@@ -66,6 +66,7 @@ func iacCommon(namespace string) {
 		"-e", "CLOUDFLARE_TOKEN=" + jamesfile.File.Credentials.Cloudflare.Password,
 		"-e", "AWS_ACCESS_KEY_ID=" + jamesfile.File.Credentials.AWS.Username,
 		"-e", "AWS_SECRET_ACCESS_KEY=" + jamesfile.File.Credentials.AWS.Password,
+		"-e", "HCLOUD_TOKEN=" + string(*jamesfile.File.Credentials.Hetzner),
 		"-v", pathToNamespaceFile("state/") + ":/work/state/", // state directory
 		"-v", pathToNamespaceFile("terraform.tfstate") + ":/work/terraform.tfstate",
 		"-v", pathToNamespaceFile("terraform.tfstate.backup") + ":/work/terraform.tfstate.backup",
