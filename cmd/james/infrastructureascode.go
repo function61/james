@@ -120,8 +120,8 @@ func credentialsToTerraformAndPackerEnvs(creds Credentials) map[string]string {
 	if creds.DigitalOcean != nil {
 		// 1st is for Packer
 		// 2nd for Terraform (yes, different key for same thing)
-		envs["DIGITALOCEAN_API_TOKEN"] = creds.DigitalOcean.Password
-		envs["DIGITALOCEAN_TOKEN"] = creds.DigitalOcean.Password
+		envs["DIGITALOCEAN_API_TOKEN"] = string(*creds.DigitalOcean)
+		envs["DIGITALOCEAN_TOKEN"] = string(*creds.DigitalOcean)
 	}
 
 	if creds.Cloudflare != nil {

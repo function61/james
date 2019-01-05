@@ -45,7 +45,7 @@ type BareTokenCredential string
 type Credentials struct {
 	AWS          *UsernamePasswordCredentials `json:"aws"`
 	Cloudflare   *UsernamePasswordCredentials `json:"cloudflare"`
-	DigitalOcean *UsernamePasswordCredentials `json:"digitalocean"`
+	DigitalOcean *BareTokenCredential         `json:"digitalocean"`
 	Hetzner      *BareTokenCredential         `json:"hetzner"`
 }
 
