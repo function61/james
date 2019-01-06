@@ -76,7 +76,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		labels["traefik.enable"] = "true"
 		labels["traefik.frontend.rule"] = rule
 		labels["traefik.port"] = port
-		labels["traefik.frontend.entryPoints"] = "public_https"
+		labels["traefik.frontend.entryPoints"] = "public_http,public_https"
 
 		if service.IngressPriority != nil {
 			labels["traefik.frontend.priority"] = fmt.Sprintf("%d", *service.IngressPriority)

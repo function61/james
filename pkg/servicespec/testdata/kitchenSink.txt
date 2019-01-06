@@ -22,7 +22,7 @@ services:
     deploy:
       labels:
         traefik.enable: "true"
-        traefik.frontend.entryPoints: public_https
+        traefik.frontend.entryPoints: public_http,public_https
         traefik.frontend.rule: Host:grafana.example.com
         traefik.port: "80"
       update_config:
