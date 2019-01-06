@@ -52,6 +52,7 @@ func bootstrap(box *BoxDefinition, jamesfile *JamesfileCtx) error {
 	if bootstrappingManagerBox {
 		log.Printf("Bootstrapping manager %s", box.Addr)
 
+		// detach does not wait for "service to converge" (it'll print loads of data to stdout)
 		script = fmt.Sprintf(
 			`set -eu
 
@@ -64,6 +65,7 @@ SERVERCERT_KEY="%s"
 DOCKERSOCKPROXY_VERSION="%s"
 
 docker service create \
+	--detach \
 	--name dockersockproxy \
 	--constraint node.role==manager \
 	--publish 4431:4431 \
