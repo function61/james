@@ -157,6 +157,7 @@ func nodesEntry() *cobra.Command {
 	}
 
 	cmd.AddCommand(importNodesEntry())
+	cmd.AddCommand(bootstrapEntry())
 	cmd.AddCommand(&cobra.Command{
 		Use:   "console",
 		Short: "Enters node management console",
@@ -177,7 +178,6 @@ func main() {
 	}
 
 	commands := []*cobra.Command{
-		bootstrapEntry(),
 		alertEntry(),
 		monitorsEntry(),
 		nodesEntry(),
