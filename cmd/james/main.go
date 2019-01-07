@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/apcera/termtables"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -16,6 +17,26 @@ func nodesEntry() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
+
+			tbl := termtables.CreateTable()
+			tbl.AddHeaders("Node", "RAM (GB)", "Disk (GB)", "OS", "Docker")
+
+			for _, node := range jamesfile.Cluster.Nodes {
+				specs := node.Specs
+
+				if specs == nil {
+					specs = &NodeSpecs{} // dummy
+				}
+
+				tbl.AddRow(
+					node.Name,
+					fmt.Sprintf("%.1f", specs.RamGb),
+					fmt.Sprintf("%.1f", specs.DiskGb),
+					specs.OsRelease,
+					specs.DockerVersion)
+			}
+
+			fmt.Println(tbl.Render())
 
 			for _, node := range jamesfile.Cluster.Nodes {
 				fmt.Printf("%s\n", node.Name)
