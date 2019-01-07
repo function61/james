@@ -49,12 +49,12 @@ func sshClientConfig(username string) *ssh.ClientConfig {
 }
 
 func doSsh(servname string, jamesfile *JamesfileCtx) error {
-	box, errFindBox := jamesfile.findBoxByName(servname)
-	if errFindBox != nil {
-		return errFindBox
+	node, err := jamesfile.findNodeByHostname(servname)
+	if err != nil {
+		return err
 	}
 
-	sshClient, err := ssh.Dial("tcp", sshDefaultPort(box.Addr), sshClientConfig(box.Username))
+	sshClient, err := ssh.Dial("tcp", sshDefaultPort(node.Addr), sshClientConfig(node.Username))
 	reactToError(err)
 	defer sshClient.Close()
 

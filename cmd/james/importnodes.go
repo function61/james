@@ -12,35 +12,35 @@ const (
 	terraformFileName = "nodes/terraform.tfstate"
 )
 
-func digitalOceanBoxDefinitionResolver(resource TerraformResource, sshUsername string) *BoxDefinition {
+func digitalOceanNodeResolver(resource TerraformResource, sshUsername string) *Node {
 	if resource.Type != "digitalocean_droplet" {
 		return nil
 	}
 
-	return &BoxDefinition{
+	return &Node{
 		Name:     resource.Primary.Attributes["name"],
 		Addr:     resource.Primary.Attributes["ipv4_address"],
 		Username: sshUsername,
 	}
 }
 
-func hetznerBoxDefinitionResolver(resource TerraformResource, sshUsername string) *BoxDefinition {
+func hetznerNodeResolver(resource TerraformResource, sshUsername string) *Node {
 	if resource.Type != "hcloud_server" {
 		return nil
 	}
 
-	return &BoxDefinition{
+	return &Node{
 		Name:     resource.Primary.Attributes["name"],
 		Addr:     resource.Primary.Attributes["ipv4_address"],
 		Username: sshUsername,
 	}
 }
 
-type boxDefinitionResolver func(TerraformResource, string) *BoxDefinition
+type nodeDefinitionResolver func(TerraformResource, string) *Node
 
-var boxDefinitionResolvers = []boxDefinitionResolver{
-	digitalOceanBoxDefinitionResolver,
-	hetznerBoxDefinitionResolver,
+var nodeDefinitionResolvers = []nodeDefinitionResolver{
+	digitalOceanNodeResolver,
+	hetznerNodeResolver,
 }
 
 func importNodesEntry() *cobra.Command {
@@ -54,7 +54,7 @@ func importNodesEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			newBoxesFound := []BoxDefinition{}
+			newBoxesFound := []*Node{}
 
 			terraformFile, err := os.Open(terraformFileName)
 			reactToError(err)
@@ -65,14 +65,14 @@ func importNodesEntry() *cobra.Command {
 
 			for _, module := range tf.Modules {
 				for _, resource := range module.Resources {
-					for _, resolver := range boxDefinitionResolvers {
+					for _, resolver := range nodeDefinitionResolvers {
 						boxDefinition := resolver(resource, sshUsername)
 						if boxDefinition != nil {
-							existingBox, _ := jamesfile.findBoxByName(boxDefinition.Name)
+							existingBox, _ := jamesfile.findNodeByHostname(boxDefinition.Name)
 							isNewBox := existingBox == nil
 
 							if isNewBox {
-								newBoxesFound = append(newBoxesFound, *boxDefinition)
+								newBoxesFound = append(newBoxesFound, boxDefinition)
 							}
 
 							break // no need to try other resolvers

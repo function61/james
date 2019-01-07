@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/function61/james/pkg/shellmultipart"
 	"github.com/spf13/cobra"
 	"io"
 	"log"
@@ -15,29 +16,28 @@ var version = "dev"
 
 var swarmTokenParseRegex = regexp.MustCompile("(SWMTKN-1-[^ ]+)")
 
-func bootstrap(box *BoxDefinition, jamesfile *JamesfileCtx) error {
-	var managerBox *BoxDefinition
+func bootstrap(node *Node, jamesfile *JamesfileCtx) error {
+	var managerNode *Node
 
 	if jamesfile.Cluster.SwarmManagerName != "" {
 		var err error
-		managerBox, err = jamesfile.findBoxByName(jamesfile.Cluster.SwarmManagerName)
+		managerNode, err = jamesfile.findNodeByHostname(jamesfile.Cluster.SwarmManagerName)
 		if err != nil {
 			return err
 		}
 	}
 
-	bootstrappingManagerBox := managerBox == nil
+	commands := shellmultipart.New()
+	commands.AddPart("set -eu")
 
-	script := ""
+	var swarmInitCmd *shellmultipart.Part
 
-	if bootstrappingManagerBox {
-		log.Printf("Bootstrapping manager %s", box.Addr)
+	if managerNode == nil {
+		log.Printf("Bootstrapping manager %s", node.Addr)
 
 		// detach does not wait for "service to converge" (it'll print loads of data to stdout)
-		script = fmt.Sprintf(
-			`set -eu
-
-docker swarm init --advertise-addr %s --listen-addr %s
+		script := fmt.Sprintf(
+			`docker swarm init --advertise-addr %s --listen-addr %s
 
 # for some reason we've to opt-in for encryption..
 docker network create --driver overlay --opt encrypted --attachable fn61
@@ -56,19 +56,21 @@ docker service create \
 	"fn61/dockersockproxy:$DOCKERSOCKPROXY_VERSION"
 
 `,
-			box.Addr,
-			box.Addr,
+			node.Addr,
+			node.Addr,
 			jamesfile.File.DockerSockProxyServerCertKey,
 			jamesfile.File.DockerSockProxyVersion)
+
+		swarmInitCmd = commands.AddPart(script)
 	} else {
-		log.Printf("Bootstrapping worker %s", box.Addr)
+		log.Printf("Bootstrapping worker %s", node.Addr)
 
-		script = fmt.Sprintf(
-			`set -eu
-
-docker swarm join --token %s %s:2377`,
+		script := fmt.Sprintf(
+			`docker swarm join --token %s %s:2377`,
 			jamesfile.Cluster.SwarmJoinTokenWorker,
-			managerBox.Addr)
+			managerNode.Addr)
+
+		commands.AddPart(script)
 	}
 
 	sshStdoutCopy := &bytes.Buffer{}
@@ -76,15 +78,19 @@ docker swarm join --token %s %s:2377`,
 	stdoutTee := io.MultiWriter(os.Stdout, sshStdoutCopy)
 
 	if err := runSshBash(
-		sshDefaultPort(box.Addr),
-		box.Username,
-		script,
+		sshDefaultPort(node.Addr),
+		node.Username,
+		commands.GetMultipartShellScript(),
 		stdoutTee); err != nil {
 		return err
 	}
 
-	if bootstrappingManagerBox {
-		match := swarmTokenParseRegex.FindStringSubmatch(sshStdoutCopy.String())
+	if err := commands.ParseShellOutput(sshStdoutCopy); err != nil {
+		return fmt.Errorf("ParseShellOutput: %v", err)
+	}
+
+	if swarmInitCmd != nil {
+		match := swarmTokenParseRegex.FindStringSubmatch(swarmInitCmd.Output())
 		if match == nil {
 			return errors.New("unable to find swarm token")
 		}
@@ -92,14 +98,14 @@ docker swarm join --token %s %s:2377`,
 		token := match[1]
 
 		// update manager details to jamesfile
-		jamesfile.Cluster.SwarmManagerName = box.Name
+		jamesfile.Cluster.SwarmManagerName = node.Name
 		jamesfile.Cluster.SwarmJoinTokenWorker = token
 
-		if err := writeJamesfile(&jamesfile.File); err != nil {
-			return err
-		}
-
 		portainerDetails(jamesfile)
+	}
+
+	if err := writeJamesfile(&jamesfile.File); err != nil {
+		return err
 	}
 
 	return nil
@@ -114,8 +120,8 @@ func bootstrapEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			node, errFindBox := jamesfile.findBoxByName(args[0])
-			reactToError(errFindBox)
+			node, err := jamesfile.findNodeByHostname(args[0])
+			reactToError(err)
 
 			reactToError(bootstrap(node, jamesfile))
 		},

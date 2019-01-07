@@ -11,7 +11,7 @@ import (
 
 const jamesfileFilename = "../jamesfile.json"
 
-type BoxDefinition struct {
+type Node struct {
 	Name     string `json:"Name"`
 	Addr     string `json:"Addr"`
 	Username string `json:"Username"`
@@ -29,10 +29,10 @@ type Jamesfile struct {
 }
 
 type ClusterConfig struct {
-	ID                   string          `json:"id"`
-	SwarmManagerName     string          `json:"swarm_manager_name"`
-	SwarmJoinTokenWorker string          `json:"swarm_jointoken_worker"`
-	Nodes                []BoxDefinition `json:"nodes"`
+	ID                   string  `json:"id"`
+	SwarmManagerName     string  `json:"swarm_manager_name"`
+	SwarmJoinTokenWorker string  `json:"swarm_jointoken_worker"`
+	Nodes                []*Node `json:"nodes"`
 }
 
 type UsernamePasswordCredentials struct {
@@ -94,10 +94,10 @@ func writeJamesfile(jamesfile *Jamesfile) error {
 	return nil
 }
 
-func (j *JamesfileCtx) findBoxByName(name string) (*BoxDefinition, error) {
+func (j *JamesfileCtx) findNodeByHostname(name string) (*Node, error) {
 	for _, node := range j.File.Clusters[j.ClusterID].Nodes {
 		if node.Name == name {
-			return &node, nil
+			return node, nil
 		}
 	}
 
