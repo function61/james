@@ -12,7 +12,7 @@ const (
 	terraformFileName = "nodes/terraform.tfstate"
 )
 
-func digitalOceanBoxDefinitionResolver(resource TerraformResource) *BoxDefinition {
+func digitalOceanBoxDefinitionResolver(resource TerraformResource, sshUsername string) *BoxDefinition {
 	if resource.Type != "digitalocean_droplet" {
 		return nil
 	}
@@ -20,11 +20,11 @@ func digitalOceanBoxDefinitionResolver(resource TerraformResource) *BoxDefinitio
 	return &BoxDefinition{
 		Name:     resource.Primary.Attributes["name"],
 		Addr:     resource.Primary.Attributes["ipv4_address"],
-		Username: "core", // FIXME: assumption about underlying image
+		Username: sshUsername,
 	}
 }
 
-func hetznerBoxDefinitionResolver(resource TerraformResource) *BoxDefinition {
+func hetznerBoxDefinitionResolver(resource TerraformResource, sshUsername string) *BoxDefinition {
 	if resource.Type != "hcloud_server" {
 		return nil
 	}
@@ -32,19 +32,21 @@ func hetznerBoxDefinitionResolver(resource TerraformResource) *BoxDefinition {
 	return &BoxDefinition{
 		Name:     resource.Primary.Attributes["name"],
 		Addr:     resource.Primary.Attributes["ipv4_address"],
-		Username: "root", // FIXME: assumption about underlying image
+		Username: sshUsername,
 	}
 }
 
-type boxDefinitionResolver func(TerraformResource) *BoxDefinition
+type boxDefinitionResolver func(TerraformResource, string) *BoxDefinition
 
 var boxDefinitionResolvers = []boxDefinitionResolver{
 	digitalOceanBoxDefinitionResolver,
 	hetznerBoxDefinitionResolver,
 }
 
-func importBoxesEntry() *cobra.Command {
-	return &cobra.Command{
+func importNodesEntry() *cobra.Command {
+	sshUsername := "core"
+
+	cmd := &cobra.Command{
 		Use:   "import",
 		Short: "Import boxes from Terraform",
 		Args:  cobra.NoArgs,
@@ -64,7 +66,7 @@ func importBoxesEntry() *cobra.Command {
 			for _, module := range tf.Modules {
 				for _, resource := range module.Resources {
 					for _, resolver := range boxDefinitionResolvers {
-						boxDefinition := resolver(resource)
+						boxDefinition := resolver(resource, sshUsername)
 						if boxDefinition != nil {
 							existingBox, _ := jamesfile.findBoxByName(boxDefinition.Name)
 							isNewBox := existingBox == nil
@@ -90,6 +92,10 @@ func importBoxesEntry() *cobra.Command {
 			fmt.Printf("Updated Jamesfile with %d boxes\nRemember to bootstrap added boxes\n", len(newBoxesFound))
 		},
 	}
+
+	cmd.Flags().StringVarP(&sshUsername, "ssh-username", "", sshUsername, "Username to use when logging in with SSH")
+
+	return cmd
 }
 
 // TODO: piggyback Terraform data structures
