@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
 	"os"
@@ -13,24 +12,6 @@ import (
 )
 
 var version = "dev"
-
-func runSshBash(addr string, username string, bashScript string, stdout io.Writer) error {
-	sshClient, err := ssh.Dial("tcp", addr, sshClientConfig(username))
-	reactToError(err)
-	defer sshClient.Close()
-
-	sshSession, err := sshClient.NewSession()
-	reactToError(err)
-	defer sshSession.Close()
-
-	sshSession.Stdin = bytes.NewBufferString(bashScript)
-	sshSession.Stdout = stdout
-	sshSession.Stderr = os.Stderr
-
-	// without --login with some boxes the environment (e.g. PATH) is not set up properly.
-	// alternative would probably be to hardcode full paths to binary-to-invoke
-	return sshSession.Run("/bin/bash --login")
-}
 
 var swarmTokenParseRegex = regexp.MustCompile("(SWMTKN-1-[^ ]+)")
 
