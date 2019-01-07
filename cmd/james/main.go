@@ -29,6 +29,7 @@ func bootstrap(node *Node, jamesfile *JamesfileCtx) error {
 
 	commands := shellmultipart.New()
 	commands.AddPart("set -eu")
+	commands.AddPart("sudo hostnamectl set-hostname " + node.Name)
 
 	var swarmInitCmd *shellmultipart.Part
 
