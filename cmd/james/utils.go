@@ -12,9 +12,18 @@ import (
 const jamesfileFilename = "../jamesfile.json"
 
 type Node struct {
-	Name     string `json:"Name"`
-	Addr     string `json:"Addr"`
-	Username string `json:"Username"`
+	Name     string     `json:"Name"`
+	Addr     string     `json:"Addr"`
+	Username string     `json:"Username"`
+	Specs    *NodeSpecs `json:"specs"` // fetched on bootstrap
+}
+
+type NodeSpecs struct {
+	KernelVersion string  `json:"kernel_version"`
+	OsRelease     string  `json:"os_release"`
+	DockerVersion string  `json:"docker_version"`
+	RamGb         float64 `json:"ram_gb"`
+	DiskGb        float64 `json:"disk_gb"`
 }
 
 type Jamesfile struct {

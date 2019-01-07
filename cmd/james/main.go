@@ -31,6 +31,8 @@ func bootstrap(node *Node, jamesfile *JamesfileCtx) error {
 	commands.AddPart("set -eu")
 	commands.AddPart("sudo hostnamectl set-hostname " + node.Name)
 
+	parseDetectionResults := attachDetectors(commands)
+
 	var swarmInitCmd *shellmultipart.Part
 
 	if managerNode == nil {
@@ -104,6 +106,13 @@ docker service create \
 
 		portainerDetails(jamesfile)
 	}
+
+	nodeSpecs, err := parseDetectionResults()
+	if err != nil {
+		return err
+	}
+
+	node.Specs = nodeSpecs
 
 	if err := writeJamesfile(&jamesfile.File); err != nil {
 		return err
