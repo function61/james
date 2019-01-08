@@ -3,12 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/apcera/termtables"
+	"github.com/function61/gokit/dynversion"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 	"os"
 )
-
-var version = "dev"
 
 func nodesEntry() *cobra.Command {
 	cmd := &cobra.Command{
@@ -59,7 +58,7 @@ func main() {
 	app := &cobra.Command{
 		Use:     os.Args[0],
 		Short:   "James is your friendly infrastructure tool",
-		Version: version,
+		Version: dynversion.Version,
 	}
 
 	commands := []*cobra.Command{

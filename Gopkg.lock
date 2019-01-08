@@ -22,11 +22,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7507ec8f721b55fe3b629ecb4f8653c6352d2a829a4a74e03ee2aef2f7fb6e2b"
+  digest = "1:3e8deb3cac1d437d4eee7a26b3d0d3c9ca6f35676d89397e968fbfbc8a7ce4c1"
   name = "github.com/function61/gokit"
   packages = [
     "assert",
     "cryptorandombytes",
+    "dynversion",
     "envvar",
     "ezhttp",
     "jsonfile",
@@ -117,6 +118,7 @@
     "github.com/docker/cli/cli/compose/types",
     "github.com/function61/gokit/assert",
     "github.com/function61/gokit/cryptorandombytes",
+    "github.com/function61/gokit/dynversion",
     "github.com/function61/gokit/envvar",
     "github.com/function61/gokit/ezhttp",
     "github.com/function61/gokit/jsonfile",
