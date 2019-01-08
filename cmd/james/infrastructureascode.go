@@ -70,10 +70,6 @@ func iacCommon(namespace string) {
 	tfFilesFromNamespace, err := filepath.Glob(namespace + "/*.tf")
 	reactToError(err)
 
-	if len(tfFilesFromNamespace) == 0 {
-		reactToError(errors.New("no *.tf files found"))
-	}
-
 	for _, tfFile := range tfFilesFromNamespace {
 		// remove the path to the dir and keep only filename
 		filename := filepath.Base(tfFile)
