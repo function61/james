@@ -7,6 +7,7 @@ import (
 	"github.com/apcera/termtables"
 	"github.com/function61/gokit/cryptorandombytes"
 	"github.com/function61/gokit/ezhttp"
+	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +16,7 @@ var (
 	errCanaryNotConfigured = errors.New("canary not configured")
 )
 
-func monitorsList(jamesfile Jamesfile) error {
+func monitorsList(jamesfile jamestypes.Jamesfile) error {
 	config, err := getConfig(jamesfile)
 	if err != nil {
 		return err
@@ -41,7 +42,7 @@ func monitorsList(jamesfile Jamesfile) error {
 	return nil
 }
 
-func monitorsCreate(url string, findString string, jamesfile Jamesfile) error {
+func monitorsCreate(url string, findString string, jamesfile jamestypes.Jamesfile) error {
 	config, err := getConfig(jamesfile)
 	if err != nil {
 		return err
@@ -59,7 +60,7 @@ func monitorsCreate(url string, findString string, jamesfile Jamesfile) error {
 	return setConfig(config, jamesfile)
 }
 
-func monitorsDelete(id string, jamesfile Jamesfile) error {
+func monitorsDelete(id string, jamesfile jamestypes.Jamesfile) error {
 	config, err := getConfig(jamesfile)
 	if err != nil {
 		return err
@@ -75,7 +76,7 @@ func monitorsDelete(id string, jamesfile Jamesfile) error {
 	return setConfig(config, jamesfile)
 }
 
-func monitorsEnableOrDisable(id string, enable bool, jamesfile Jamesfile) error {
+func monitorsEnableOrDisable(id string, enable bool, jamesfile jamestypes.Jamesfile) error {
 	config, err := getConfig(jamesfile)
 	if err != nil {
 		return err
@@ -197,7 +198,7 @@ func deleteMonitor(id string, monitors []Monitor) ([]Monitor, error) {
 	return nil, errUnableToFindMonitor
 }
 
-func configEndpointFor(jamesfile Jamesfile) (string, error) {
+func configEndpointFor(jamesfile jamestypes.Jamesfile) (string, error) {
 	if jamesfile.CanaryEndpoint == "" {
 		return "", errCanaryNotConfigured
 	}
@@ -217,7 +218,7 @@ type Monitor struct {
 	Find    string `json:"find"`
 }
 
-func getConfig(jamesfile Jamesfile) (*Config, error) {
+func getConfig(jamesfile jamestypes.Jamesfile) (*Config, error) {
 	configEndpoint, err := configEndpointFor(jamesfile)
 	if err != nil {
 		return nil, err
@@ -236,7 +237,7 @@ func getConfig(jamesfile Jamesfile) (*Config, error) {
 	return config, nil
 }
 
-func setConfig(config *Config, jamesfile Jamesfile) error {
+func setConfig(config *Config, jamesfile jamestypes.Jamesfile) error {
 	configEndpoint, err := configEndpointFor(jamesfile)
 	if err != nil {
 		return err

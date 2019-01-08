@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -48,8 +49,8 @@ func sshClientConfig(username string) *ssh.ClientConfig {
 	}
 }
 
-func doSsh(servname string, jamesfile *JamesfileCtx) error {
-	node, err := jamesfile.findNodeByHostname(servname)
+func doSsh(servname string, jamesfile *jamestypes.JamesfileCtx) error {
+	node, err := findNodeByHostname(jamesfile, servname)
 	if err != nil {
 		return err
 	}

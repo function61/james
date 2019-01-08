@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"github.com/apcera/termtables"
 	"github.com/function61/gokit/ezhttp"
+	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 	"strings"
 	"time"
 )
 
-func alertsList(jamesfile Jamesfile) error {
+func alertsList(jamesfile jamestypes.Jamesfile) error {
 	ctx, cancel := context.WithTimeout(context.TODO(), ezhttp.DefaultTimeout10s)
 	defer cancel()
 
@@ -43,7 +44,7 @@ func alertsList(jamesfile Jamesfile) error {
 	return nil
 }
 
-func alertsAck(key string, jamesfile Jamesfile) error {
+func alertsAck(key string, jamesfile jamestypes.Jamesfile) error {
 	ackRequest := &AcknowledgeAlertRequest{
 		Key: key,
 	}

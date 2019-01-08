@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
 )
 
-func portainerDetails(jamesfile *JamesfileCtx) {
+func portainerDetails(jamesfile *jamestypes.JamesfileCtx) {
 	fmt.Printf(
 		"Portainer connection details:\n"+
 			"                  Name: %s\n"+

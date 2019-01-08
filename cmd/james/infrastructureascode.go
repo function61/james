@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
@@ -109,7 +110,7 @@ func touch(path string) error {
 	return nil
 }
 
-func credentialsToTerraformAndPackerEnvs(creds Credentials) map[string]string {
+func credentialsToTerraformAndPackerEnvs(creds jamestypes.Credentials) map[string]string {
 	envs := map[string]string{}
 
 	if creds.DigitalOcean != nil {

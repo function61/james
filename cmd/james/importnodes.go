@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -12,31 +13,31 @@ const (
 	terraformFileName = "nodes/terraform.tfstate"
 )
 
-func digitalOceanNodeResolver(resource TerraformResource, sshUsername string) *Node {
+func digitalOceanNodeResolver(resource TerraformResource, sshUsername string) *jamestypes.Node {
 	if resource.Type != "digitalocean_droplet" {
 		return nil
 	}
 
-	return &Node{
+	return &jamestypes.Node{
 		Name:     resource.Primary.Attributes["name"],
 		Addr:     resource.Primary.Attributes["ipv4_address"],
 		Username: sshUsername,
 	}
 }
 
-func hetznerNodeResolver(resource TerraformResource, sshUsername string) *Node {
+func hetznerNodeResolver(resource TerraformResource, sshUsername string) *jamestypes.Node {
 	if resource.Type != "hcloud_server" {
 		return nil
 	}
 
-	return &Node{
+	return &jamestypes.Node{
 		Name:     resource.Primary.Attributes["name"],
 		Addr:     resource.Primary.Attributes["ipv4_address"],
 		Username: sshUsername,
 	}
 }
 
-type nodeDefinitionResolver func(TerraformResource, string) *Node
+type nodeDefinitionResolver func(TerraformResource, string) *jamestypes.Node
 
 var nodeDefinitionResolvers = []nodeDefinitionResolver{
 	digitalOceanNodeResolver,
@@ -54,7 +55,7 @@ func importNodesEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			addedNodes := []*Node{}
+			addedNodes := []*jamestypes.Node{}
 
 			terraformFile, err := os.Open(terraformFileName)
 			reactToError(err)
@@ -68,7 +69,7 @@ func importNodesEntry() *cobra.Command {
 					for _, resolver := range nodeDefinitionResolvers {
 						nodeSpec := resolver(resource, sshUsername)
 						if nodeSpec != nil {
-							existingBox, _ := jamesfile.findNodeByHostname(nodeSpec.Name)
+							existingBox, _ := findNodeByHostname(jamesfile, nodeSpec.Name)
 							isNewBox := existingBox == nil
 
 							if isNewBox {

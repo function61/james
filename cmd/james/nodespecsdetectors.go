@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/function61/james/pkg/jamestypes"
 	"github.com/function61/james/pkg/shellmultipart"
 	"math"
 	"strconv"
@@ -38,14 +39,14 @@ disk_total="${BASH_REMATCH[1]}"
 
 echo "$disk_total"`
 
-func attachDetectors(scripts *shellmultipart.Multipart) func() (*NodeSpecs, error) {
+func attachDetectors(scripts *shellmultipart.Multipart) func() (*jamestypes.NodeSpecs, error) {
 	kernelVersion := scripts.AddPart("uname --kernel-release")
 	osRelease := scripts.AddPart(`(source /etc/os-release; echo "$PRETTY_NAME")`)
 	ramMb := scripts.AddPart(ramDetectScript)
 	dockerVersion := scripts.AddPart(dockerVersionDetectScript)
 	diskTotalGb := scripts.AddPart(diskTotalGigabytes)
 
-	return func() (*NodeSpecs, error) {
+	return func() (*jamestypes.NodeSpecs, error) {
 		trimRightNewline := func(in string) string { return strings.TrimRight(in, "\n") }
 
 		diskTotalGbParsed, err := strconv.ParseFloat(trimRightNewline(diskTotalGb.Output()), 64)
@@ -67,7 +68,7 @@ func attachDetectors(scripts *shellmultipart.Multipart) func() (*NodeSpecs, erro
 			"",
 			-1)
 
-		return &NodeSpecs{
+		return &jamestypes.NodeSpecs{
 			KernelVersion: trimRightNewline(kernelVersion.Output()),
 			OsRelease:     osReleaseCut,
 			DockerVersion: trimRightNewline(dockerVersion.Output()),

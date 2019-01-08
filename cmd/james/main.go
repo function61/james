@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/apcera/termtables"
+	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -25,7 +26,7 @@ func nodesEntry() *cobra.Command {
 				specs := node.Specs
 
 				if specs == nil {
-					specs = &NodeSpecs{} // dummy
+					specs = &jamestypes.NodeSpecs{} // dummy
 				}
 
 				tbl.AddRow(

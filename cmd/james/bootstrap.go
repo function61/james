@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/function61/james/pkg/jamestypes"
 	"github.com/function61/james/pkg/shellmultipart"
 	"github.com/spf13/cobra"
 	"io"
@@ -14,12 +15,12 @@ import (
 
 var swarmTokenParseRegex = regexp.MustCompile("(SWMTKN-1-[^ ]+)")
 
-func bootstrap(node *Node, jamesfile *JamesfileCtx) error {
-	var managerNode *Node
+func bootstrap(node *jamestypes.Node, jamesfile *jamestypes.JamesfileCtx) error {
+	var managerNode *jamestypes.Node
 
 	if jamesfile.Cluster.SwarmManagerName != "" {
 		var err error
-		managerNode, err = jamesfile.findNodeByHostname(jamesfile.Cluster.SwarmManagerName)
+		managerNode, err = findNodeByHostname(jamesfile, jamesfile.Cluster.SwarmManagerName)
 		if err != nil {
 			return err
 		}
@@ -128,7 +129,7 @@ func bootstrapEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			node, err := jamesfile.findNodeByHostname(args[0])
+			node, err := findNodeByHostname(jamesfile, args[0])
 			reactToError(err)
 
 			reactToError(bootstrap(node, jamesfile))
