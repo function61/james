@@ -8,6 +8,20 @@ import (
 	"time"
 )
 
+func TestParseAndNormalize(t *testing.T) {
+	raw := &WhoisXmlApiData{}
+	assert.Assert(t, json.Unmarshal([]byte(exampleResponse), raw) == nil)
+
+	data := normalizeWhoisXmlApi(*raw)
+
+	assert.EqualString(t, data.Domain, "example.com")
+	assert.EqualString(t, data.Registrar, "Gandi SAS")
+	assert.EqualString(t, data.RegistrantName, "function61.com")
+	assert.Assert(t, strings.HasPrefix(data.RegistrantDetails, "function61.com\nregister number: 1234567-2\n"))
+	assert.EqualString(t, data.Created.Format(time.RFC3339), "2006-09-03T00:00:00Z")
+	assert.EqualString(t, data.Expires.Format(time.RFC3339), "2021-09-03T00:00:00Z")
+}
+
 const exampleResponse = `{
    "WhoisRecord": {
       "domainName": "example.com",
@@ -64,17 +78,3 @@ const exampleResponse = `{
       "estimatedDomainAge": 4510
    }
 }`
-
-func TestParseAndNormalize(t *testing.T) {
-	raw := &WhoisXmlApiData{}
-	assert.Assert(t, json.Unmarshal([]byte(exampleResponse), raw) == nil)
-
-	data := normalizeWhoisXmlApi(*raw)
-
-	assert.EqualString(t, data.Domain, "example.com")
-	assert.EqualString(t, data.Registrar, "Gandi SAS")
-	assert.EqualString(t, data.RegistrantName, "function61.com")
-	assert.Assert(t, strings.HasPrefix(data.RegistrantDetails, "function61.com\nregister number: 1234567-2\n"))
-	assert.EqualString(t, data.Created.Format(time.RFC3339), "2006-09-03T00:00:00Z")
-	assert.EqualString(t, data.Expires.Format(time.RFC3339), "2021-09-03T00:00:00Z")
-}
