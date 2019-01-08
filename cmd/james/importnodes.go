@@ -48,13 +48,13 @@ func importNodesEntry() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "import",
-		Short: "Import boxes from Terraform",
+		Short: "Import nodes from Terraform",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
 			reactToError(err)
 
-			newBoxesFound := []*Node{}
+			addedNodes := []*Node{}
 
 			terraformFile, err := os.Open(terraformFileName)
 			reactToError(err)
@@ -66,13 +66,13 @@ func importNodesEntry() *cobra.Command {
 			for _, module := range tf.Modules {
 				for _, resource := range module.Resources {
 					for _, resolver := range nodeDefinitionResolvers {
-						boxDefinition := resolver(resource, sshUsername)
-						if boxDefinition != nil {
-							existingBox, _ := jamesfile.findNodeByHostname(boxDefinition.Name)
+						nodeSpec := resolver(resource, sshUsername)
+						if nodeSpec != nil {
+							existingBox, _ := jamesfile.findNodeByHostname(nodeSpec.Name)
 							isNewBox := existingBox == nil
 
 							if isNewBox {
-								newBoxesFound = append(newBoxesFound, boxDefinition)
+								addedNodes = append(addedNodes, nodeSpec)
 							}
 
 							break // no need to try other resolvers
@@ -81,15 +81,15 @@ func importNodesEntry() *cobra.Command {
 				}
 			}
 
-			if len(newBoxesFound) == 0 {
-				reactToError(errors.New("no new boxes found"))
+			if len(addedNodes) == 0 {
+				reactToError(errors.New("no new nodes found"))
 			}
 
-			jamesfile.Cluster.Nodes = append(jamesfile.Cluster.Nodes, newBoxesFound...)
+			jamesfile.Cluster.Nodes = append(jamesfile.Cluster.Nodes, addedNodes...)
 
 			reactToError(writeJamesfile(&jamesfile.File))
 
-			fmt.Printf("Updated Jamesfile with %d boxes\nRemember to bootstrap added boxes\n", len(newBoxesFound))
+			fmt.Printf("Updated Jamesfile with %d nodes\nRemember to bootstrap added nodes\n", len(addedNodes))
 		},
 	}
 
