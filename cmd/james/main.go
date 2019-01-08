@@ -37,10 +37,6 @@ func nodesEntry() *cobra.Command {
 			}
 
 			fmt.Println(tbl.Render())
-
-			for _, node := range jamesfile.Cluster.Nodes {
-				fmt.Printf("%s\n", node.Name)
-			}
 		},
 	}
 
