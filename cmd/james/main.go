@@ -70,6 +70,7 @@ func main() {
 		iacEntry(),
 		dnsEntry(),
 		specToComposeEntry(),
+		domainsEntry(),
 	}
 
 	for _, cmd := range commands {

@@ -1,5 +1,9 @@
 package jamestypes
 
+import (
+	"github.com/function61/james/pkg/domainwhois"
+)
+
 type Node struct {
 	Name     string     `json:"Name"`
 	Addr     string     `json:"Addr"`
@@ -23,6 +27,7 @@ type Jamesfile struct {
 	DockerSockProxyServerCertKey     string                    `json:"DockerSockProxyServerCertKey"`
 	DockerSockProxyVersion           string                    `json:"DockerSockProxyVersion"`
 	CanaryEndpoint                   string                    `json:"canary_endpoint"`
+	Domains                          []domainwhois.Data        `json:"domains"`
 	Credentials                      Credentials               `json:"credentials"`
 }
 
@@ -45,6 +50,7 @@ type Credentials struct {
 	Cloudflare   *UsernamePasswordCredentials `json:"cloudflare"`
 	DigitalOcean *BareTokenCredential         `json:"digitalocean"`
 	Hetzner      *BareTokenCredential         `json:"hetzner"`
+	WhoisXmlApi  *BareTokenCredential         `json:"whoisxmlapi"`
 }
 
 type JamesfileCtx struct {
