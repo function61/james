@@ -26,6 +26,8 @@ services:
         limits:
           memory: "16777216"
     image: joonas/hellohttp:v2
+    networks:
+      default: null
 networks:
   default:
     external:

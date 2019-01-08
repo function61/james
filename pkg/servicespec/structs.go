@@ -20,6 +20,7 @@ type ServiceSpec struct {
 	RamMb                 *uint64            `json:"ram_mb"`
 	IngressPriority       *uint64            `json:"ingress_priority"`
 	PidHost               bool               `json:"pid_host"`
+	NetHost               bool               `json:"net_host"`
 	TcpPorts              []Port             `json:"tcp_port"`
 	UdpPorts              []Port             `json:"udp_port"`
 	PersistentVolumes     []PersistentVolume `json:"persistentvolume"`

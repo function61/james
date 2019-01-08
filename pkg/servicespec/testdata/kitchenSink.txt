@@ -34,6 +34,8 @@ services:
         constraints:
         - node.hostname == myserver.fn61.net
     image: fn61/grafana:20181220_1152_030fca37
+    networks:
+      default: null
     volumes:
     - type: volume
       source: perkele

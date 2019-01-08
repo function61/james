@@ -24,7 +24,7 @@ var knownUpdateConfigs = map[string]*composetypes.UpdateConfig{
 	},
 }
 
-func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes.Config) error {
+func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes.Config, defaults Defaults) error {
 	envs, err := convertEnvs(service)
 	if err != nil {
 		return err
@@ -119,6 +119,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 				},
 			},
 		},
+		Networks: map[string]*composetypes.ServiceNetworkConfig{},
 	}
 
 	if isGlobal && service.Replicas != nil {
@@ -129,6 +130,25 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 
 	if service.PidHost {
 		composeService.Pid = "host"
+	}
+
+	if service.NetHost {
+		createNetworkConfigIfNotExists(compose, "host", composetypes.NetworkConfig{
+			External: composetypes.External{
+				Name: "host",
+			},
+		})
+
+		composeService.Networks["host"] = nil
+	} else {
+		createNetworkConfigIfNotExists(compose, "default", composetypes.NetworkConfig{
+			External: composetypes.External{
+				Name: defaults.DockerNetworkName,
+			},
+		})
+
+		// not required, but better to be explicit
+		composeService.Networks["default"] = nil
 	}
 
 	if service.PlacementNodeHostname != "" {
@@ -154,25 +174,19 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 
 func specToComposeConfig(spec *SpecFile, defaults Defaults) (*composetypes.Config, error) {
 	compose := &composetypes.Config{
-		Version: "3.5",
-		Volumes: map[string]composetypes.VolumeConfig{},
-		Networks: map[string]composetypes.NetworkConfig{
-			"default": composetypes.NetworkConfig{
-				External: composetypes.External{
-					Name: defaults.DockerNetworkName,
-				},
-			},
-		},
+		Version:  "3.5",
+		Volumes:  map[string]composetypes.VolumeConfig{},
+		Networks: map[string]composetypes.NetworkConfig{},
 	}
 
 	for _, service := range spec.Services {
-		if err := convertOneService(service, false, compose); err != nil {
+		if err := convertOneService(service, false, compose, defaults); err != nil {
 			return nil, err
 		}
 	}
 
 	for _, service := range spec.GlobalServices {
-		if err := convertOneService(service, true, compose); err != nil {
+		if err := convertOneService(service, true, compose, defaults); err != nil {
 			return nil, err
 		}
 	}
@@ -270,4 +284,12 @@ func parseIngressConfig(serialized string) (string, string, error) {
 	}
 
 	return matches[1], matches[2], nil
+}
+
+func createNetworkConfigIfNotExists(compose *composetypes.Config, networkName string, config composetypes.NetworkConfig) {
+	if _, alreadyExists := compose.Networks[networkName]; alreadyExists {
+		return
+	}
+
+	compose.Networks[networkName] = config
 }
