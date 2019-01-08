@@ -30,6 +30,10 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		return err
 	}
 
+	if service.BackupCommand != nil && *service.BackupCommand != "" {
+		envs["BACKUP_COMMAND"] = service.BackupCommand
+	}
+
 	volumes := []composetypes.ServiceVolumeConfig{}
 	for _, bindMount := range service.BindMounts {
 		volumes = append(volumes, composetypes.ServiceVolumeConfig{
@@ -105,7 +109,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		Name:        service.Name,
 		Image:       service.Image + ":" + service.Version,
 		Command:     service.Command,
-		Environment: *envs,
+		Environment: envs,
 		Volumes:     volumes,
 		Ports:       convertPorts(service),
 		Deploy: composetypes.DeployConfig{
@@ -162,9 +166,12 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		}
 	}
 
-	// TODO: test fails with this
 	if len(service.PersistentVolumes) > 0 && service.HowToUpdate != "stop-old-first" {
 		return errors.New("expecting stop-old-first when have PersistentVolumes")
+	}
+
+	if len(service.PersistentVolumes) > 0 && service.BackupCommand == nil {
+		return errors.New(`stateful service - set BackupCommand to at least "" if you don't want backups`)
 	}
 
 	compose.Services = append(compose.Services, composeService)
@@ -241,7 +248,7 @@ func specToCompose(content io.Reader) (string, error) {
 	return string(yamlBytes), nil
 }
 
-func convertEnvs(service ServiceSpec) (*composetypes.MappingWithEquals, error) {
+func convertEnvs(service ServiceSpec) (composetypes.MappingWithEquals, error) {
 	envs := composetypes.MappingWithEquals{}
 	for _, envSerialized := range service.ENVs {
 		key, value := envvar.Parse(envSerialized)
@@ -252,7 +259,7 @@ func convertEnvs(service ServiceSpec) (*composetypes.MappingWithEquals, error) {
 		envs[key] = &value
 	}
 
-	return &envs, nil
+	return envs, nil
 }
 
 func convertPorts(service ServiceSpec) []composetypes.ServicePortConfig {

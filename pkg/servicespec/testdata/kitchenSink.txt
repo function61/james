@@ -9,6 +9,8 @@ service {
   ingress_public = "80/Host:grafana.example.com"
   ram_mb = 16
 
+  backup_command = ""
+
   persistentvolume {
     name = "perkele"
     target = "/data"

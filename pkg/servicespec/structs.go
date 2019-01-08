@@ -17,6 +17,7 @@ type ServiceSpec struct {
 	PlacementNodeHostname string             `json:"placement_node_hostname"`
 	IngressPublic         string             `json:"ingress_public"`
 	IngressAdmin          string             `json:"ingress_admin"`
+	BackupCommand         *string            `json:"backup_command"`
 	RamMb                 *uint64            `json:"ram_mb"`
 	IngressPriority       *uint64            `json:"ingress_priority"`
 	PidHost               bool               `json:"pid_host"`
