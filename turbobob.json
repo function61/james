@@ -17,5 +17,9 @@
 			"contextless_build": true
 		}
 	],
-	"docker_images": []
+	"docker_images": [],
+	"os_arches": {
+		"linux-amd64": true,
+		"linux-arm": true
+	}
 }
