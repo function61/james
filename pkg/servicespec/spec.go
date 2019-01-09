@@ -30,7 +30,13 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		return err
 	}
 
+	// try to tell the image's logger system to omit timestamps, since Docker adds those anyway
+	// https://github.com/function61/gokit/blob/7397b370de1295275a4670bce87cc8f5f64e33fa/logex/helpers.go#L27
+	one := "1"
+	envs["LOGGER_SUPPRESS_TIMESTAMPS"] = &one
+
 	if service.BackupCommand != nil && *service.BackupCommand != "" {
+		// TODO: use a label for this instead?
 		envs["BACKUP_COMMAND"] = service.BackupCommand
 	}
 

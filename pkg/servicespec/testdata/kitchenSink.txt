@@ -35,6 +35,8 @@ services:
       placement:
         constraints:
         - node.hostname == myserver.fn61.net
+    environment:
+      LOGGER_SUPPRESS_TIMESTAMPS: "1"
     image: fn61/grafana:20181220_1152_030fca37
     networks:
       default: null

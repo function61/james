@@ -25,6 +25,8 @@ services:
       resources:
         limits:
           memory: "16777216"
+    environment:
+      LOGGER_SUPPRESS_TIMESTAMPS: "1"
     image: joonas/hellohttp:v2
     networks:
       default: null
