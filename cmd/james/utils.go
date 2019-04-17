@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/function61/gokit/jsonfile"
@@ -36,19 +35,7 @@ func readJamesfile() (*jamestypes.JamesfileCtx, error) {
 }
 
 func writeJamesfile(jamesfile *jamestypes.Jamesfile) error {
-	file, err := os.Create(jamesfileFilename)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	jsonEncoder := json.NewEncoder(file)
-	jsonEncoder.SetIndent("", "\t")
-	if err := jsonEncoder.Encode(jamesfile); err != nil {
-		return err
-	}
-
-	return nil
+	return jsonfile.Write(jamesfileFilename, jamesfile)
 }
 
 func findNodeByHostname(j *jamestypes.JamesfileCtx, name string) (*jamestypes.Node, error) {
