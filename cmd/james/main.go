@@ -71,6 +71,7 @@ func main() {
 		dnsEntry(),
 		specToComposeEntry(),
 		domainsEntry(),
+		stackEntry(),
 	}
 
 	for _, cmd := range commands {

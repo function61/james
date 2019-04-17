@@ -21,6 +21,7 @@ type NodeSpecs struct {
 
 type Jamesfile struct {
 	Domain                           string                    `json:"domain"`
+	PortainerBaseUrl                 string                    `json:"portainer_baseurl"`
 	Clusters                         map[string]*ClusterConfig `json:"clusters"`
 	AlertManagerEndpoint             string                    `json:"AlertManagerEndpoint"`
 	InfrastructureAsCodeImageVersion string                    `json:"InfrastructureAsCodeImageVersion"`
@@ -51,6 +52,8 @@ type Credentials struct {
 	DigitalOcean *BareTokenCredential         `json:"digitalocean"`
 	Hetzner      *BareTokenCredential         `json:"hetzner"`
 	WhoisXmlApi  *BareTokenCredential         `json:"whoisxmlapi"`
+	Portainer    *UsernamePasswordCredentials `json:"portainer"`
+	PortainerTok *BareTokenCredential         `json:"portainer_shortlived_bearertoken"`
 }
 
 type JamesfileCtx struct {

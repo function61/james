@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
@@ -58,6 +59,32 @@ func portainerEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			reactToError(portainerLaunch())
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "renew-token",
+		Short: "Renews Portainer bearer token (used for stack deploys)",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			jctx, err := readJamesfile()
+			reactToError(err)
+
+			creds := jctx.File.Credentials.Portainer
+			if creds == nil {
+				reactToError(errors.New("no portainer credentials defined"))
+			}
+
+			pc, err := makePortainerClient(*jctx, true)
+			reactToError(err)
+
+			auth, err := pc.Auth(creds.Username, creds.Password)
+			reactToError(err)
+
+			tok := jamestypes.BareTokenCredential(auth)
+			jctx.File.Credentials.PortainerTok = &tok
+
+			reactToError(writeJamesfile(&jctx.File))
 		},
 	})
 

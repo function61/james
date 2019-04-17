@@ -79,6 +79,14 @@
   version = "v0.0.3"
 
 [[projects]]
+  digest = "1:d917313f309bda80d27274d53985bc65651f81a5b66b820749ac7f8ef061fd04"
+  name = "github.com/sergi/go-diff"
+  packages = ["diffmatchpatch"]
+  pruneopts = "UT"
+  revision = "1744e2970ca51c86172c8190fadad617561ed6e7"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:645cabccbb4fa8aab25a956cbcbdf6a6845ca736b2c64e197ca7cbb9d210b939"
   name = "github.com/spf13/cobra"
   packages = ["."]
@@ -125,6 +133,7 @@
     "github.com/function61/gokit/hcl2json",
     "github.com/function61/gokit/jsonfile",
     "github.com/go-yaml/yaml",
+    "github.com/sergi/go-diff/diffmatchpatch",
     "github.com/spf13/cobra",
     "golang.org/x/crypto/ssh",
     "golang.org/x/crypto/ssh/agent",
