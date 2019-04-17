@@ -22,7 +22,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3e8deb3cac1d437d4eee7a26b3d0d3c9ca6f35676d89397e968fbfbc8a7ce4c1"
+  digest = "1:45f451f67f723cc125b6a4dad657379b2e6e7ee6fbc9d55714e608f54fa146ff"
   name = "github.com/function61/gokit"
   packages = [
     "assert",
@@ -30,10 +30,11 @@
     "dynversion",
     "envvar",
     "ezhttp",
+    "hcl2json",
     "jsonfile",
   ]
   pruneopts = "UT"
-  revision = "7397b370de1295275a4670bce87cc8f5f64e33fa"
+  revision = "c40c967604799b9762ea6dc32b7a286eee1f7d81"
 
 [[projects]]
   digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
@@ -121,9 +122,9 @@
     "github.com/function61/gokit/dynversion",
     "github.com/function61/gokit/envvar",
     "github.com/function61/gokit/ezhttp",
+    "github.com/function61/gokit/hcl2json",
     "github.com/function61/gokit/jsonfile",
     "github.com/go-yaml/yaml",
-    "github.com/hashicorp/hcl",
     "github.com/spf13/cobra",
     "golang.org/x/crypto/ssh",
     "golang.org/x/crypto/ssh/agent",

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	composetypes "github.com/docker/cli/cli/compose/types"
 	"github.com/function61/gokit/envvar"
+	"github.com/function61/gokit/hcl2json"
 	"github.com/function61/gokit/jsonfile"
-	"github.com/function61/james/pkg/hcltojson"
 	"github.com/go-yaml/yaml"
 	"io"
 	"os"
@@ -208,7 +208,7 @@ func specToComposeConfig(spec *SpecFile, defaults Defaults) (*composetypes.Confi
 }
 
 func parseSpecFile(content io.Reader) (*SpecFile, error) {
-	specFileAsJson, err := hcltojson.Convert(content)
+	specFileAsJson, err := hcl2json.Convert(content)
 	if err != nil {
 		return nil, err
 	}
