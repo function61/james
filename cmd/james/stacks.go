@@ -3,11 +3,14 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/function61/gokit/ezhttp"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/function61/james/pkg/portainerclient"
 	"github.com/function61/james/pkg/servicespec"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
+	"net/http"
+	"os"
 )
 
 func stackDeploy(path string, execute bool) error {
@@ -31,6 +34,11 @@ func stackDeploy(path string, execute bool) error {
 
 	stacks, err := portainer.ListStacks()
 	if err != nil {
+		// display pro-tip
+		if rse, isResponseStatusError := err.(*ezhttp.ResponseStatusError); isResponseStatusError && rse.StatusCode() == http.StatusUnauthorized {
+			return fmt.Errorf("token expired; please run:\n$ %s portainer renew-token", os.Args[0])
+		}
+
 		return err
 	}
 

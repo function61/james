@@ -22,10 +22,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:45f451f67f723cc125b6a4dad657379b2e6e7ee6fbc9d55714e608f54fa146ff"
+  digest = "1:4cb5531c2132856145d05c1432a2043c81731fbf60673b9dbfc088ade67b99b9"
   name = "github.com/function61/gokit"
   packages = [
     "assert",
+    "atomicfilewrite",
     "cryptorandombytes",
     "dynversion",
     "envvar",
@@ -34,7 +35,7 @@
     "jsonfile",
   ]
   pruneopts = "UT"
-  revision = "c40c967604799b9762ea6dc32b7a286eee1f7d81"
+  revision = "08e0d38dfda60a9f230b0c4f92b67d6dd4da0bbf"
 
 [[projects]]
   digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
