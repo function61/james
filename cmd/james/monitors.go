@@ -174,6 +174,10 @@ func enableOrDisableMonitor(id string, enable bool, monitors []Monitor) ([]Monit
 	found := false
 	for _, monitor := range monitors {
 		if monitor.Id == id {
+			if monitor.Enabled == enable {
+				return nil, errors.New("would not change Enabled state")
+			}
+
 			monitor.Enabled = enable
 			found = true
 		}
