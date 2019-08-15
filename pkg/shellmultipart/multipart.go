@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// TODO: check if mime/multipart can be used here
+
 type Part struct {
 	script string
 	output string
