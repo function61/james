@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/function61/gokit/ezhttp"
@@ -51,28 +52,39 @@ func stackDeploy(path string, execute bool, retriesLeft int) error {
 		}
 	}
 
-	stack, err := findPortainerStackByRef(jamesRef, stacks)
-	if err != nil {
-		return err
-	}
+	stack := findPortainerStackByRef(jamesRef, stacks)
+	if stack == nil { // new stack
+		fmt.Printf("NOTE! stack by JAMES_REF=%s not found - creating new\n", jamesRef)
 
-	stackId := fmt.Sprintf("%d", stack.Id)
+		if !execute {
+			dmp := diffmatchpatch.New()
+			diffs := dmp.DiffMain("", updated, false)
 
-	if !execute {
-		previous, err := portainer.StackFile(stackId)
-		if err != nil {
-			return err
+			fmt.Println(dmp.DiffPrettyText(diffs))
+
+			return nil
 		}
 
-		dmp := diffmatchpatch.New()
-		diffs := dmp.DiffMain(previous, updated, false)
+		return portainer.CreateStack(context.TODO(), "deluge", jamesRef, updated)
+	} else { // update existing stack
+		stackId := fmt.Sprintf("%d", stack.Id)
 
-		fmt.Println(dmp.DiffPrettyText(diffs))
+		if !execute {
+			previous, err := portainer.StackFile(stackId)
+			if err != nil {
+				return err
+			}
 
-		return nil
+			dmp := diffmatchpatch.New()
+			diffs := dmp.DiffMain(previous, updated, false)
+
+			fmt.Println(dmp.DiffPrettyText(diffs))
+
+			return nil
+		}
+
+		return portainer.UpdateStack(context.TODO(), stackId, jamesRef, updated)
 	}
-
-	return portainer.UpdateStack(stackId, jamesRef, updated)
 }
 
 func stackDeployEntry() *cobra.Command {
@@ -120,14 +132,14 @@ func makePortainerClient(jctx jamestypes.JamesfileCtx, missingTokOk bool) (*port
 	return portainerclient.New(jctx.File.PortainerBaseUrl, tok, jctx.Cluster.PortainerEndpointId), nil
 }
 
-func findPortainerStackByRef(ref string, stacks []portainerclient.Stack) (*portainerclient.Stack, error) {
+func findPortainerStackByRef(ref string, stacks []portainerclient.Stack) *portainerclient.Stack {
 	for _, stack := range stacks {
 		for _, envPair := range stack.Env {
 			if envPair.Name == "JAMES_REF" && envPair.Value == ref {
-				return &stack, nil
+				return &stack
 			}
 		}
 	}
 
-	return nil, fmt.Errorf("stack by JAMES_REF=%s not found", ref)
+	return nil
 }
