@@ -36,6 +36,7 @@ type ClusterConfig struct {
 	ID                   string  `json:"id"`
 	SwarmManagerName     string  `json:"swarm_manager_name"`
 	SwarmJoinTokenWorker string  `json:"swarm_jointoken_worker"`
+	PortainerEndpointId  string  `json:"portainer_endpoint_id"`
 	Nodes                []*Node `json:"nodes"`
 }
 

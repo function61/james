@@ -10,12 +10,14 @@ import (
 type Client struct {
 	baseUrl     string
 	bearerToken string
+	endpointId  string
 }
 
-func New(baseUrl string, bearerToken string) *Client {
+func New(baseUrl string, bearerToken string, endpointId string) *Client {
 	return &Client{
 		baseUrl:     baseUrl,
 		bearerToken: bearerToken,
+		endpointId:  endpointId,
 	}
 }
 
@@ -87,8 +89,8 @@ func (p *Client) UpdateStack(stackId string, jamesRef string, stackFile string) 
 	}
 
 	if res, err := ezhttp.Put(
-		context.TODO(),
-		fmt.Sprintf("%s/api/stacks/%s?endpointId=7", p.baseUrl, stackId),
+		ctx,
+		fmt.Sprintf("%s/api/stacks/%s?endpointId=%s", p.baseUrl, stackId, p.endpointId),
 		ezhttp.AuthBearer(p.bearerToken),
 		ezhttp.SendJson(&req)); err != nil {
 		resp, _ := ioutil.ReadAll(res.Body)
