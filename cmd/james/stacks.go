@@ -10,10 +10,13 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
 	"net/http"
-	"os"
 )
 
-func stackDeploy(path string, execute bool) error {
+func stackDeploy(path string, execute bool, retriesLeft int) error {
+	if retriesLeft <= 0 {
+		return errors.New("stackDeploy retries exceeded")
+	}
+
 	jctx, err := readJamesfile()
 	if err != nil {
 		return err
@@ -36,10 +39,16 @@ func stackDeploy(path string, execute bool) error {
 	if err != nil {
 		// display pro-tip
 		if rse, isResponseStatusError := err.(*ezhttp.ResponseStatusError); isResponseStatusError && rse.StatusCode() == http.StatusUnauthorized {
-			return fmt.Errorf("token expired; please run:\n$ %s portainer renew-token", os.Args[0])
-		}
+			// try to renew the token
+			if err := portainerRenewAuthToken(); err != nil {
+				return err
+			}
 
-		return err
+			// try running the whole func again (we need to reload jamesfile and make new portainer client)
+			return stackDeploy(path, execute, retriesLeft-1)
+		} else {
+			return err
+		}
 	}
 
 	stack, err := findPortainerStackByRef(jamesRef, stacks)
@@ -74,7 +83,7 @@ func stackDeployEntry() *cobra.Command {
 		Short: "Deploys a stack",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			reactToError(stackDeploy(args[0], execute))
+			reactToError(stackDeploy(args[0], execute, 2))
 		},
 	}
 

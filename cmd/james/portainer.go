@@ -47,6 +47,33 @@ func portainerLaunch() error {
 	return nil
 }
 
+func portainerRenewAuthToken() error {
+	jctx, err := readJamesfile()
+	if err != nil {
+		return err
+	}
+
+	creds := jctx.File.Credentials.Portainer
+	if creds == nil {
+		return errors.New("no portainer credentials defined")
+	}
+
+	pc, err := makePortainerClient(*jctx, true)
+	if err != nil {
+		return err
+	}
+
+	auth, err := pc.Auth(creds.Username, creds.Password)
+	if err != nil {
+		return err
+	}
+
+	tok := jamestypes.BareTokenCredential(auth)
+	jctx.File.Credentials.PortainerTok = &tok
+
+	return writeJamesfile(&jctx.File)
+}
+
 func portainerEntry() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "portainer",
@@ -67,24 +94,7 @@ func portainerEntry() *cobra.Command {
 		Short: "Renews Portainer bearer token (used for stack deploys)",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			jctx, err := readJamesfile()
-			reactToError(err)
-
-			creds := jctx.File.Credentials.Portainer
-			if creds == nil {
-				reactToError(errors.New("no portainer credentials defined"))
-			}
-
-			pc, err := makePortainerClient(*jctx, true)
-			reactToError(err)
-
-			auth, err := pc.Auth(creds.Username, creds.Password)
-			reactToError(err)
-
-			tok := jamestypes.BareTokenCredential(auth)
-			jctx.File.Credentials.PortainerTok = &tok
-
-			reactToError(writeJamesfile(&jctx.File))
+			reactToError(portainerRenewAuthToken())
 		},
 	})
 
