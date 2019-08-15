@@ -54,6 +54,17 @@ func nodesEntry() *cobra.Command {
 	return cmd
 }
 
+func vmImagesEntry() *cobra.Command {
+	return &cobra.Command{
+		Use:   "vm-images",
+		Short: "Enters VM image management console",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			iacCommon("vm-images")
+		},
+	}
+}
+
 func main() {
 	app := &cobra.Command{
 		Use:     os.Args[0],
@@ -61,11 +72,13 @@ func main() {
 		Version: dynversion.Version,
 	}
 
+	// TODO: certificate authority
 	commands := []*cobra.Command{
 		alertEntry(),
 		monitorsEntry(),
 		nodesEntry(),
 		sshEntry(),
+		vmImagesEntry(),
 		portainerEntry(),
 		iacEntry(),
 		dnsEntry(),
