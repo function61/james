@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-func stackDeploy(path string, execute bool, retriesLeft int) error {
+func stackDeploy(path string, execute bool, stackName string, retriesLeft int) error {
 	if retriesLeft <= 0 {
 		return errors.New("stackDeploy retries exceeded")
 	}
@@ -46,7 +46,7 @@ func stackDeploy(path string, execute bool, retriesLeft int) error {
 			}
 
 			// try running the whole func again (we need to reload jamesfile and make new portainer client)
-			return stackDeploy(path, execute, retriesLeft-1)
+			return stackDeploy(path, execute, stackName, retriesLeft-1)
 		} else {
 			return err
 		}
@@ -54,6 +54,10 @@ func stackDeploy(path string, execute bool, retriesLeft int) error {
 
 	stack := findPortainerStackByRef(jamesRef, stacks)
 	if stack == nil { // new stack
+		if stackName == "" {
+			return errors.New("creation of new stack requires --name CLI arg")
+		}
+
 		fmt.Printf("NOTE! stack by JAMES_REF=%s not found - creating new\n", jamesRef)
 
 		if !execute {
@@ -65,7 +69,7 @@ func stackDeploy(path string, execute bool, retriesLeft int) error {
 			return nil
 		}
 
-		return portainer.CreateStack(context.TODO(), "deluge", jamesRef, updated)
+		return portainer.CreateStack(context.TODO(), stackName, jamesRef, updated)
 	} else { // update existing stack
 		stackId := fmt.Sprintf("%d", stack.Id)
 
@@ -89,16 +93,18 @@ func stackDeploy(path string, execute bool, retriesLeft int) error {
 
 func stackDeployEntry() *cobra.Command {
 	execute := false
+	name := ""
 
 	cmd := &cobra.Command{
 		Use:   "deploy <path to .hcl>",
 		Short: "Deploys a stack",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			reactToError(stackDeploy(args[0], execute, 2))
+			reactToError(stackDeploy(args[0], execute, name, 2))
 		},
 	}
 
+	cmd.Flags().StringVarP(&name, "name", "n", name, "Name of the stack (needed when deploying new stack)")
 	cmd.Flags().BoolVarP(&execute, "execute", "x", execute, "Instead of only diffing, execute the deploy")
 
 	return cmd
