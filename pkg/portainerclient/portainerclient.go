@@ -160,3 +160,15 @@ func (p *Client) UpdateStack(ctx context.Context, stackId string, jamesRef strin
 
 	return nil
 }
+
+func (p *Client) DeleteStack(ctx context.Context, stackId int) error {
+	if res, err := ezhttp.Del(
+		ctx,
+		fmt.Sprintf("%s/api/stacks/%d", p.baseUrl, stackId),
+		ezhttp.AuthBearer(p.bearerToken)); err != nil {
+		resp, _ := ioutil.ReadAll(res.Body)
+		return fmt.Errorf("%v: %s", err, resp)
+	}
+
+	return nil
+}
