@@ -2,6 +2,7 @@ package portainerclient
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/function61/gokit/ezhttp"
 	"io/ioutil"
@@ -13,12 +14,16 @@ type Client struct {
 	endpointId  string
 }
 
-func New(baseUrl string, bearerToken string, endpointId string) *Client {
+func New(baseUrl string, bearerToken string, endpointId string) (*Client, error) {
+	if endpointId == "" {
+		return nil, errors.New("empty endpointId")
+	}
+
 	return &Client{
 		baseUrl:     baseUrl,
 		bearerToken: bearerToken,
 		endpointId:  endpointId,
-	}
+	}, nil
 }
 
 func (p *Client) Auth(username, password string) (string, error) {

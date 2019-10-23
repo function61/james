@@ -129,7 +129,7 @@ func makePortainerClient(jctx jamestypes.JamesfileCtx, missingTokOk bool) (*port
 		}
 	}
 
-	return portainerclient.New(jctx.File.PortainerBaseUrl, tok, jctx.Cluster.PortainerEndpointId), nil
+	return portainerclient.New(jctx.File.PortainerBaseUrl, tok, jctx.Cluster.PortainerEndpointId)
 }
 
 func findPortainerStackByRef(ref string, stacks []portainerclient.Stack) *portainerclient.Stack {
