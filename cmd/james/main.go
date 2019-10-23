@@ -19,7 +19,7 @@ func nodesEntry() *cobra.Command {
 			reactToError(err)
 
 			tbl := termtables.CreateTable()
-			tbl.AddHeaders("Node", "RAM (GB)", "Disk (GB)", "OS", "Docker")
+			tbl.AddHeaders("Node", "RAM (GB)", "Disk (GB)", "OS", "Docker", "Kernel")
 
 			for _, node := range jamesfile.Cluster.Nodes {
 				specs := node.Specs
@@ -33,7 +33,8 @@ func nodesEntry() *cobra.Command {
 					fmt.Sprintf("%.1f", specs.RamGb),
 					fmt.Sprintf("%.1f", specs.DiskGb),
 					specs.OsRelease,
-					specs.DockerVersion)
+					specs.DockerVersion,
+					specs.KernelVersion)
 			}
 
 			fmt.Println(tbl.Render())
