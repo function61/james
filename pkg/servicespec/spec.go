@@ -172,9 +172,12 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		}
 	}
 
-	if len(service.PersistentVolumes) > 0 && service.HowToUpdate != "stop-old-first" {
-		return errors.New("expecting stop-old-first when have PersistentVolumes")
-	}
+	/*
+		there are stateful volumes that can be shared between concurrent containers (file uploads @ erotuomari.com)
+		if len(service.PersistentVolumes) > 0 && service.HowToUpdate != "stop-old-first" {
+			return errors.New("expecting stop-old-first when have PersistentVolumes")
+		}
+	*/
 
 	if len(service.PersistentVolumes) > 0 && service.BackupCommand == nil {
 		return errors.New(`stateful service - set BackupCommand to at least "" if you don't want backups`)
