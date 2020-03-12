@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
@@ -11,9 +12,10 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
 	"net/http"
+	"os"
 )
 
-func stackDeploy(path string, execute bool, stackName string, retriesLeft int) error {
+func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) error {
 	if retriesLeft <= 0 {
 		return errors.New("stackDeploy retries exceeded")
 	}
@@ -46,10 +48,39 @@ func stackDeploy(path string, execute bool, stackName string, retriesLeft int) e
 			}
 
 			// try running the whole func again (we need to reload jamesfile and make new portainer client)
-			return stackDeploy(path, execute, stackName, retriesLeft-1)
+			return stackDeploy(path, dryRun, stackName, retriesLeft-1)
 		} else {
 			return err
 		}
+	}
+
+	diffAndAck := func(previous string, needAck bool) error {
+		dmp := diffmatchpatch.New()
+		diffs := dmp.DiffMain(previous, updated, false)
+
+		// or DiffCleanupSemantic?
+		diffs = dmp.DiffCleanupMerge(diffs)
+
+		fmt.Println(dmp.DiffPrettyText(diffs))
+
+		if !needAck {
+			return nil
+		}
+
+		fmt.Printf("deploy y/n: ")
+
+		line, _, err := bufio.NewReader(os.Stdin).ReadLine()
+		if err != nil {
+			return err
+		}
+
+		if string(line) != "y" {
+			return fmt.Errorf("ack not 'y'; got %s", line)
+		}
+
+		fmt.Println("HOLD ON TO YOUR BUTTS")
+
+		return nil
 	}
 
 	stack := findPortainerStackByRef(jamesRef, stacks)
@@ -60,35 +91,39 @@ func stackDeploy(path string, execute bool, stackName string, retriesLeft int) e
 
 		fmt.Printf("NOTE! stack by JAMES_REF=%s not found - creating new\n", jamesRef)
 
-		if !execute {
-			dmp := diffmatchpatch.New()
-			diffs := dmp.DiffMain("", updated, false)
+		if err := diffAndAck("", !dryRun); err != nil {
+			return err
+		}
 
-			fmt.Println(dmp.DiffPrettyText(diffs))
-
+		if dryRun {
 			return nil
 		}
 
-		return portainer.CreateStack(context.TODO(), stackName, jamesRef, updated)
+		if err := portainer.CreateStack(context.TODO(), stackName, jamesRef, updated); err != nil {
+			return err
+		}
 	} else { // update existing stack
 		stackId := fmt.Sprintf("%d", stack.Id)
 
-		if !execute {
-			previous, err := portainer.StackFile(stackId)
-			if err != nil {
-				return err
-			}
+		previous, err := portainer.StackFile(stackId)
+		if err != nil {
+			return err
+		}
 
-			dmp := diffmatchpatch.New()
-			diffs := dmp.DiffMain(previous, updated, false)
+		if err := diffAndAck(previous, !dryRun); err != nil {
+			return err
+		}
 
-			fmt.Println(dmp.DiffPrettyText(diffs))
-
+		if dryRun {
 			return nil
 		}
 
-		return portainer.UpdateStack(context.TODO(), stackId, jamesRef, updated)
+		if err := portainer.UpdateStack(context.TODO(), stackId, jamesRef, updated); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 func stackRm(path string) error {
@@ -120,7 +155,7 @@ func stackRm(path string) error {
 
 
 func stackDeployEntry() *cobra.Command {
-	execute := false
+	dry := false
 	name := ""
 
 	cmd := &cobra.Command{
@@ -128,12 +163,12 @@ func stackDeployEntry() *cobra.Command {
 		Short: "Deploys a stack",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			reactToError(stackDeploy(args[0], execute, name, 2))
+			reactToError(stackDeploy(args[0], dry, name, 2))
 		},
 	}
 
 	cmd.Flags().StringVarP(&name, "name", "n", name, "Name of the stack (needed when deploying new stack)")
-	cmd.Flags().BoolVarP(&execute, "execute", "x", execute, "Instead of only diffing, execute the deploy")
+	cmd.Flags().BoolVarP(&dry, "dry", "d", dry, "Instead of deploying, just make a dry run (do a diff)")
 
 	return cmd
 }
