@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) error {
@@ -83,7 +84,7 @@ func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) er
 		return nil
 	}
 
-	stack := findPortainerStackByRef(jamesRef, stacks)
+	stack := findPortainerStackByRef(jamesRef, jctx.Cluster.PortainerEndpointId, stacks)
 	if stack == nil { // new stack
 		if stackName == "" {
 			return errors.New("creation of new stack requires --name CLI arg")
@@ -145,7 +146,7 @@ func stackRm(path string) error {
 		return err
 	}
 
-	stack := findPortainerStackByRef(jamesRef, stacks)
+	stack := findPortainerStackByRef(jamesRef, jctx.Cluster.PortainerEndpointId, stacks)
 	if stack == nil {
 		return fmt.Errorf("stack to delete not found: %s", path)
 	}
@@ -215,8 +216,12 @@ func makePortainerClient(jctx jamestypes.JamesfileCtx, missingTokOk bool) (*port
 	return portainerclient.New(jctx.File.PortainerBaseUrl, tok, jctx.Cluster.PortainerEndpointId)
 }
 
-func findPortainerStackByRef(ref string, stacks []portainerclient.Stack) *portainerclient.Stack {
+func findPortainerStackByRef(ref string, endpointID string, stacks []portainerclient.Stack) *portainerclient.Stack {
 	for _, stack := range stacks {
+		if strconv.Itoa(stack.EndpointID) != endpointID {
+			continue
+		}
+
 		for _, envPair := range stack.Env {
 			if envPair.Name == "JAMES_REF" && envPair.Value == ref {
 				return &stack
