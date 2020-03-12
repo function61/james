@@ -24,6 +24,8 @@ func TestSpecToCompose(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test // pin
+
 		t.Run(test.title, func(t *testing.T) {
 			actualOutput, err := specToCompose(bytes.NewBufferString(test.input))
 
