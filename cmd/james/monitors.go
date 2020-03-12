@@ -104,9 +104,9 @@ func monitorsEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
-			reactToError(monitorsList(jamesfile.File))
+			exitIfError(monitorsList(jamesfile.File))
 		},
 	})
 
@@ -116,9 +116,9 @@ func monitorsEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
-			reactToError(monitorsCreate(args[0], args[1], jamesfile.File))
+			exitIfError(monitorsCreate(args[0], args[1], jamesfile.File))
 		},
 	})
 
@@ -128,9 +128,9 @@ func monitorsEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
-			reactToError(monitorsDelete(args[0], jamesfile.File))
+			exitIfError(monitorsDelete(args[0], jamesfile.File))
 		},
 	})
 
@@ -140,9 +140,9 @@ func monitorsEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
-			reactToError(monitorsEnableOrDisable(args[0], true, jamesfile.File))
+			exitIfError(monitorsEnableOrDisable(args[0], true, jamesfile.File))
 		},
 	})
 
@@ -152,9 +152,9 @@ func monitorsEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
-			reactToError(monitorsEnableOrDisable(args[0], false, jamesfile.File))
+			exitIfError(monitorsEnableOrDisable(args[0], false, jamesfile.File))
 		},
 	})
 

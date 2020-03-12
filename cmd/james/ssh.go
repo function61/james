@@ -15,11 +15,11 @@ import (
 
 func runSshBash(addr string, username string, bashScript string, stdout io.Writer) error {
 	sshClient, err := ssh.Dial("tcp", addr, sshClientConfig(username))
-	reactToError(err)
+	exitIfError(err)
 	defer sshClient.Close()
 
 	sshSession, err := sshClient.NewSession()
-	reactToError(err)
+	exitIfError(err)
 	defer sshSession.Close()
 
 	sshSession.Stdin = bytes.NewBufferString(bashScript)
@@ -56,11 +56,11 @@ func doSsh(servname string, jamesfile *jamestypes.JamesfileCtx) error {
 	}
 
 	sshClient, err := ssh.Dial("tcp", sshDefaultPort(node.Addr), sshClientConfig(node.Username))
-	reactToError(err)
+	exitIfError(err)
 	defer sshClient.Close()
 
 	sshSession, err := sshClient.NewSession()
-	reactToError(err)
+	exitIfError(err)
 	defer sshSession.Close()
 
 	fmt.Printf("Connected to %s\n-----\n", servname)
@@ -97,9 +97,9 @@ func sshEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
-			reactToError(doSsh(args[0], jamesfile))
+			exitIfError(doSsh(args[0], jamesfile))
 		},
 	}
 }

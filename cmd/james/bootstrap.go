@@ -127,12 +127,12 @@ func bootstrapEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
 			node, err := findNodeByHostname(jamesfile, args[0])
-			reactToError(err)
+			exitIfError(err)
 
-			reactToError(bootstrap(node, jamesfile))
+			exitIfError(bootstrap(node, jamesfile))
 		},
 	}
 }

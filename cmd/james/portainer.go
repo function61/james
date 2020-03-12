@@ -85,7 +85,7 @@ func portainerEntry() *cobra.Command {
 		Short: "Deploys Portainer on localhost",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			reactToError(portainerLaunch())
+			exitIfError(portainerLaunch())
 		},
 	})
 
@@ -94,7 +94,7 @@ func portainerEntry() *cobra.Command {
 		Short: "Renews Portainer bearer token (used for stack deploys)",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			reactToError(portainerRenewAuthToken())
+			exitIfError(portainerRenewAuthToken())
 		},
 	})
 
@@ -104,7 +104,7 @@ func portainerEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
 			portainerDetails(jamesfile)
 		},

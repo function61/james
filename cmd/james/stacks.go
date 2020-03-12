@@ -167,7 +167,7 @@ func stackDeployEntry() *cobra.Command {
 		Short: "Deploys a stack",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			reactToError(stackDeploy(args[0], dry, name, 2))
+			exitIfError(stackDeploy(args[0], dry, name, 2))
 		},
 	}
 
@@ -183,7 +183,7 @@ func stackRmEntry() *cobra.Command {
 		Short: "Removes a stack",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			reactToError(stackRm(args[0]))
+			exitIfError(stackRm(args[0]))
 		},
 	}
 

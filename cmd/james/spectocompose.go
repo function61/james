@@ -13,7 +13,7 @@ func specToComposeEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			yamlContent, err := servicespec.SpecToComposeByPath(args[0])
-			reactToError(err)
+			exitIfError(err)
 
 			fmt.Printf("%s\n", yamlContent)
 		},

@@ -53,16 +53,16 @@ func importNodesEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
 			addedNodes := []*jamestypes.Node{}
 
 			terraformFile, err := os.Open(terraformFileName)
-			reactToError(err)
+			exitIfError(err)
 			defer terraformFile.Close()
 
 			tf := TerraformFile{}
-			reactToError(json.NewDecoder(terraformFile).Decode(&tf))
+			exitIfError(json.NewDecoder(terraformFile).Decode(&tf))
 
 			for _, module := range tf.Modules {
 				for _, resource := range module.Resources {
@@ -83,12 +83,12 @@ func importNodesEntry() *cobra.Command {
 			}
 
 			if len(addedNodes) == 0 {
-				reactToError(errors.New("no new nodes found"))
+				exitIfError(errors.New("no new nodes found"))
 			}
 
 			jamesfile.Cluster.Nodes = append(jamesfile.Cluster.Nodes, addedNodes...)
 
-			reactToError(writeJamesfile(&jamesfile.File))
+			exitIfError(writeJamesfile(&jamesfile.File))
 
 			fmt.Printf("Updated Jamesfile with %d nodes\nRemember to bootstrap added nodes\n", len(addedNodes))
 		},

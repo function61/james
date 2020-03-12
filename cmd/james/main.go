@@ -16,7 +16,7 @@ func nodesEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
 			tbl := termtables.CreateTable()
 			tbl.AddHeaders("Node", "RAM (GB)", "Disk (GB)", "OS", "Docker", "Kernel")

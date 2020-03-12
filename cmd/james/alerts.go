@@ -66,9 +66,9 @@ func alertEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
-			reactToError(alertsList(jamesfile.File))
+			exitIfError(alertsList(jamesfile.File))
 		},
 	}
 
@@ -78,9 +78,9 @@ func alertEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			reactToError(err)
+			exitIfError(err)
 
-			reactToError(alertsAck(args[0], jamesfile.File))
+			exitIfError(alertsAck(args[0], jamesfile.File))
 		},
 	})
 

@@ -41,17 +41,17 @@ func iacEntry() *cobra.Command {
 
 func iacCommon(namespace string) {
 	jamesfile, err := readJamesfile()
-	reactToError(err)
+	exitIfError(err)
 
 	cwd, err := os.Getwd()
-	reactToError(err)
+	exitIfError(err)
 
 	pathToNamespaceFile := func(filename string) string {
 		return cwd + "/" + namespace + "/" + filename
 	}
 
-	reactToError(touch(pathToNamespaceFile("terraform.tfstate")))
-	reactToError(touch(pathToNamespaceFile("terraform.tfstate.backup")))
+	exitIfError(touch(pathToNamespaceFile("terraform.tfstate")))
+	exitIfError(touch(pathToNamespaceFile("terraform.tfstate.backup")))
 
 	dockerArgs := []string{
 		"docker",
@@ -69,7 +69,7 @@ func iacCommon(namespace string) {
 	}
 
 	tfFilesFromNamespace, err := filepath.Glob(namespace + "/*.tf")
-	reactToError(err)
+	exitIfError(err)
 
 	for _, tfFile := range tfFilesFromNamespace {
 		// remove the path to the dir and keep only filename
@@ -89,7 +89,7 @@ func iacCommon(namespace string) {
 	runIac.Stdout = os.Stdout
 	runIac.Stderr = os.Stderr
 
-	reactToError(runIac.Run())
+	exitIfError(runIac.Run())
 }
 
 // creates an empty file if it does not exist

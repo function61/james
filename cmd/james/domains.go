@@ -19,7 +19,7 @@ func domainsEntry() *cobra.Command {
 		Short: "List tracked domains",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			reactToError(listDomains())
+			exitIfError(listDomains())
 		},
 	})
 
@@ -28,7 +28,7 @@ func domainsEntry() *cobra.Command {
 		Short: "Start tracking whois data of domain",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			reactToError(addDomain(args[0]))
+			exitIfError(addDomain(args[0]))
 		},
 	})
 
@@ -59,7 +59,7 @@ func listDomains() error {
 
 func addDomain(name string) error {
 	jamesfile, err := readJamesfile()
-	reactToError(err)
+	exitIfError(err)
 
 	if jamesfile.File.Credentials.WhoisXmlApi == nil {
 		return errors.New("credentials not set")
