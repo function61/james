@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"github.com/function61/gokit/ezhttp"
@@ -11,6 +12,7 @@ import (
 	"github.com/function61/james/pkg/servicespec"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
+	"math/big"
 	"net/http"
 	"os"
 	"strconv"
@@ -124,6 +126,8 @@ func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) er
 		}
 	}
 
+	fmt.Println("✓ p.s. " + randomJurassicParkQuote())
+
 	return nil
 }
 
@@ -153,7 +157,6 @@ func stackRm(path string) error {
 
 	return portainer.DeleteStack(context.TODO(), stack.Id)
 }
-
 
 func stackDeployEntry() *cobra.Command {
 	dry := false
@@ -230,4 +233,26 @@ func findPortainerStackByRef(ref string, endpointID string, stacks []portainercl
 	}
 
 	return nil
+}
+
+var jurassicParkQuotes = []string{
+	"I am totally unappreciated in my time. You can run this whole park from this room with minimal staff for up to 3 days. You think that kind of automation is easy?",
+	"You know anybody who can network 8 connection machines and debug 2 million lines of code for what I bid for this job?",
+	"Access main program. Access main security. Access main program grid.",
+	"Don't get cheap on me, Dodgson. That was Hammond's mistake.",
+	"It’s a UNIX system! I know this!",
+}
+
+func randomJurassicParkQuote() string {
+	return randomString(jurassicParkQuotes)
+}
+
+func randomString(strs []string) string {
+	// regular math/rand would suffice but I hate its "seeding needed" API
+	// rand.Int(.., 3) // can return 0 | 1 | 2
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(len(strs))))
+	if err != nil {
+		panic(err)
+	}
+	return strs[int(n.Int64())]
 }
