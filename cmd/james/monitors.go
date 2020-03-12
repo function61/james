@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/apcera/termtables"
 	"github.com/function61/gokit/cryptorandombytes"
 	"github.com/function61/gokit/ezhttp"
 	"github.com/function61/james/pkg/jamestypes"
+	"github.com/scylladb/termtables"
 	"github.com/spf13/cobra"
 )
 

@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/apcera/termtables"
 	"github.com/function61/gokit/dynversion"
 	"github.com/function61/james/pkg/jamestypes"
+	"github.com/scylladb/termtables"
 	"github.com/spf13/cobra"
 	"os"
 )
