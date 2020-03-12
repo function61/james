@@ -6,6 +6,7 @@ type EnvPair struct {
 }
 
 type Stack struct {
-	Id  int
-	Env []EnvPair
+	Id         int
+	EndpointID int
+	Env        []EnvPair
 }
