@@ -9,7 +9,7 @@ import (
 func specToComposeEntry() *cobra.Command {
 	return &cobra.Command{
 		Use:   "spec-to-compose <path>",
-		Short: "Spec to JSON",
+		Short: "Spec (HCL) to YAML",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			yamlContent, err := servicespec.SpecToComposeByPath(args[0])
