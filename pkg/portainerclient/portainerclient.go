@@ -71,10 +71,10 @@ func (p *Client) DockerInfo(ctx context.Context) (*DockerInfoResponse, error) {
 	return res, nil
 }
 
-func (p *Client) ListStacks() ([]Stack, error) {
+func (p *Client) ListStacks(ctx context.Context) ([]Stack, error) {
 	stacks := []Stack{}
 	if _, err := ezhttp.Get(
-		context.TODO(),
+		ctx,
 		p.baseUrl+"/api/stacks",
 		ezhttp.AuthBearer(p.bearerToken),
 		ezhttp.RespondsJson(&stacks, true),

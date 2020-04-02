@@ -41,10 +41,11 @@ func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) er
 	// "prod5:stacks/hellohttp.hcl"
 	jamesRef := jctx.ClusterID + ":" + path
 
-	stacks, err := portainer.ListStacks()
+	stacks, err := portainer.ListStacks(context.TODO())
 	if err != nil {
 		// display pro-tip
-		if rse, isResponseStatusError := err.(*ezhttp.ResponseStatusError); isResponseStatusError && rse.StatusCode() == http.StatusUnauthorized {
+		rse := &ezhttp.ResponseStatusError{}
+		if isResponseStatusError := errors.As(err, &rse); isResponseStatusError && rse.StatusCode() == http.StatusUnauthorized {
 			// try to renew the token
 			if err := portainerRenewAuthToken(); err != nil {
 				return err
@@ -145,7 +146,7 @@ func stackRm(path string) error {
 	// "prod5:stacks/hellohttp.hcl"
 	jamesRef := jctx.ClusterID + ":" + path
 
-	stacks, err := portainer.ListStacks()
+	stacks, err := portainer.ListStacks(context.TODO())
 	if err != nil {
 		return err
 	}
