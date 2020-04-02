@@ -117,6 +117,9 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		Command:     service.Command,
 		Environment: envs,
 		Volumes:     volumes,
+		Devices:     service.Devices,
+		CapAdd:      service.Caps,
+		Privileged:  service.Privileged,
 		Ports:       convertPorts(service),
 		Deploy: composetypes.DeployConfig{
 			Mode:         deployMode,

@@ -14,6 +14,9 @@ type ServiceSpec struct {
 	Version               string             `json:"version"`
 	ENVs                  []string           `json:"envs"`
 	Command               []string           `json:"command"`
+	Privileged            bool               `json:"privileged"`
+	Devices               []string           `json:"devices"`
+	Caps                  []string           `json:"caps"`
 	PlacementNodeHostname string             `json:"placement_node_hostname"`
 	IngressPublic         string             `json:"ingress_public"`
 	IngressAdmin          string             `json:"ingress_admin"`
