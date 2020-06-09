@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/function61/gokit/osutil"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 )
@@ -54,16 +55,16 @@ func importNodesEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
 			addedNodes := []*jamestypes.Node{}
 
 			terraformFile, err := os.Open(terraformFileName)
-			exitIfError(err)
+			osutil.ExitIfError(err)
 			defer terraformFile.Close()
 
 			tf := TerraformFile{}
-			exitIfError(json.NewDecoder(terraformFile).Decode(&tf))
+			osutil.ExitIfError(json.NewDecoder(terraformFile).Decode(&tf))
 
 			for _, module := range tf.Modules {
 				for _, resource := range module.Resources {
@@ -84,12 +85,12 @@ func importNodesEntry() *cobra.Command {
 			}
 
 			if len(addedNodes) == 0 {
-				exitIfError(errors.New("no new nodes found"))
+				osutil.ExitIfError(errors.New("no new nodes found"))
 			}
 
 			jamesfile.Cluster.Nodes = append(jamesfile.Cluster.Nodes, addedNodes...)
 
-			exitIfError(writeJamesfile(&jamesfile.File))
+			osutil.ExitIfError(writeJamesfile(&jamesfile.File))
 
 			fmt.Printf("Updated Jamesfile with %d nodes\nRemember to bootstrap added nodes\n", len(addedNodes))
 		},

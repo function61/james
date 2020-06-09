@@ -48,10 +48,3 @@ func findNodeByHostname(j *jamestypes.JamesfileCtx, name string) (*jamestypes.No
 
 	return nil, errors.New("Node not found: " + name)
 }
-
-func exitIfError(err error) {
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-}

@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/function61/gokit/osutil"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 )
@@ -86,7 +87,7 @@ func portainerEntry() *cobra.Command {
 		Short: "Deploys Portainer on localhost",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			exitIfError(portainerLaunch())
+			osutil.ExitIfError(portainerLaunch())
 		},
 	})
 
@@ -95,7 +96,7 @@ func portainerEntry() *cobra.Command {
 		Short: "Renews Portainer bearer token (used for stack deploys)",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			exitIfError(portainerRenewAuthToken())
+			osutil.ExitIfError(portainerRenewAuthToken())
 		},
 	})
 
@@ -105,7 +106,7 @@ func portainerEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
 			portainerDetails(jamesfile)
 		},

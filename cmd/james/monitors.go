@@ -7,6 +7,7 @@ import (
 
 	"github.com/function61/gokit/cryptorandombytes"
 	"github.com/function61/gokit/ezhttp"
+	"github.com/function61/gokit/osutil"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/scylladb/termtables"
 	"github.com/spf13/cobra"
@@ -105,9 +106,9 @@ func monitorsEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
-			exitIfError(monitorsList(jamesfile.File))
+			osutil.ExitIfError(monitorsList(jamesfile.File))
 		},
 	})
 
@@ -117,9 +118,9 @@ func monitorsEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
-			exitIfError(monitorsCreate(args[0], args[1], jamesfile.File))
+			osutil.ExitIfError(monitorsCreate(args[0], args[1], jamesfile.File))
 		},
 	})
 
@@ -129,9 +130,9 @@ func monitorsEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
-			exitIfError(monitorsDelete(args[0], jamesfile.File))
+			osutil.ExitIfError(monitorsDelete(args[0], jamesfile.File))
 		},
 	})
 
@@ -141,9 +142,9 @@ func monitorsEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
-			exitIfError(monitorsEnableOrDisable(args[0], true, jamesfile.File))
+			osutil.ExitIfError(monitorsEnableOrDisable(args[0], true, jamesfile.File))
 		},
 	})
 
@@ -153,9 +154,9 @@ func monitorsEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
-			exitIfError(monitorsEnableOrDisable(args[0], false, jamesfile.File))
+			osutil.ExitIfError(monitorsEnableOrDisable(args[0], false, jamesfile.File))
 		},
 	})
 

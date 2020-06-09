@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/function61/gokit/osutil"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 )
@@ -42,17 +43,17 @@ func iacEntry() *cobra.Command {
 
 func iacCommon(namespace string) {
 	jamesfile, err := readJamesfile()
-	exitIfError(err)
+	osutil.ExitIfError(err)
 
 	cwd, err := os.Getwd()
-	exitIfError(err)
+	osutil.ExitIfError(err)
 
 	pathToNamespaceFile := func(filename string) string {
 		return cwd + "/" + namespace + "/" + filename
 	}
 
-	exitIfError(touch(pathToNamespaceFile("terraform.tfstate")))
-	exitIfError(touch(pathToNamespaceFile("terraform.tfstate.backup")))
+	osutil.ExitIfError(touch(pathToNamespaceFile("terraform.tfstate")))
+	osutil.ExitIfError(touch(pathToNamespaceFile("terraform.tfstate.backup")))
 
 	dockerArgs := []string{
 		"docker",
@@ -70,7 +71,7 @@ func iacCommon(namespace string) {
 	}
 
 	tfFilesFromNamespace, err := filepath.Glob(namespace + "/*.tf")
-	exitIfError(err)
+	osutil.ExitIfError(err)
 
 	for _, tfFile := range tfFilesFromNamespace {
 		// remove the path to the dir and keep only filename
@@ -90,7 +91,7 @@ func iacCommon(namespace string) {
 	runIac.Stdout = os.Stdout
 	runIac.Stderr = os.Stderr
 
-	exitIfError(runIac.Run())
+	osutil.ExitIfError(runIac.Run())
 }
 
 // creates an empty file if it does not exist

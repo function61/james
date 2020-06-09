@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/function61/gokit/ezhttp"
+	"github.com/function61/gokit/osutil"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/function61/james/pkg/portainerclient"
 	"github.com/function61/james/pkg/servicespec"
@@ -169,7 +170,7 @@ func stackDeployEntry() *cobra.Command {
 		Short: "Deploys a stack",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			exitIfError(stackDeploy(args[0], dry, name, 2))
+			osutil.ExitIfError(stackDeploy(args[0], dry, name, 2))
 		},
 	}
 
@@ -185,7 +186,7 @@ func stackRmEntry() *cobra.Command {
 		Short: "Removes a stack",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			exitIfError(stackRm(args[0]))
+			osutil.ExitIfError(stackRm(args[0]))
 		},
 	}
 

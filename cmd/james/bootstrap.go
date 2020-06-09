@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/function61/gokit/osutil"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/function61/james/pkg/shellmultipart"
 	"github.com/spf13/cobra"
@@ -128,12 +129,12 @@ func bootstrapEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
 			node, err := findNodeByHostname(jamesfile, args[0])
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
-			exitIfError(bootstrap(node, jamesfile))
+			osutil.ExitIfError(bootstrap(node, jamesfile))
 		},
 	}
 }

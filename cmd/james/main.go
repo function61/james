@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/function61/gokit/dynversion"
+	"github.com/function61/gokit/osutil"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/scylladb/termtables"
 	"github.com/spf13/cobra"
@@ -17,7 +18,7 @@ func nodesEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
 			tbl := termtables.CreateTable()
 			tbl.AddHeaders("Node", "RAM (GB)", "Disk (GB)", "OS", "Docker", "Kernel")
@@ -93,8 +94,5 @@ func main() {
 		app.AddCommand(cmd)
 	}
 
-	if err := app.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	osutil.ExitIfError(app.Execute())
 }

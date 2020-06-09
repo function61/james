@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/function61/gokit/osutil"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
@@ -16,11 +17,11 @@ import (
 
 func runSshBash(addr string, username string, bashScript string, stdout io.Writer) error {
 	sshClient, err := ssh.Dial("tcp", addr, sshClientConfig(username))
-	exitIfError(err)
+	osutil.ExitIfError(err)
 	defer sshClient.Close()
 
 	sshSession, err := sshClient.NewSession()
-	exitIfError(err)
+	osutil.ExitIfError(err)
 	defer sshSession.Close()
 
 	sshSession.Stdin = bytes.NewBufferString(bashScript)
@@ -57,11 +58,11 @@ func doSsh(servname string, jamesfile *jamestypes.JamesfileCtx) error {
 	}
 
 	sshClient, err := ssh.Dial("tcp", sshDefaultPort(node.Addr), sshClientConfig(node.Username))
-	exitIfError(err)
+	osutil.ExitIfError(err)
 	defer sshClient.Close()
 
 	sshSession, err := sshClient.NewSession()
-	exitIfError(err)
+	osutil.ExitIfError(err)
 	defer sshSession.Close()
 
 	fmt.Printf("Connected to %s\n-----\n", servname)
@@ -98,9 +99,9 @@ func sshEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
-			exitIfError(doSsh(args[0], jamesfile))
+			osutil.ExitIfError(doSsh(args[0], jamesfile))
 		},
 	}
 }

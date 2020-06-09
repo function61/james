@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/function61/gokit/ezhttp"
+	"github.com/function61/gokit/osutil"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/scylladb/termtables"
 	"github.com/spf13/cobra"
@@ -67,9 +68,9 @@ func alertEntry() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
-			exitIfError(alertsList(jamesfile.File))
+			osutil.ExitIfError(alertsList(jamesfile.File))
 		},
 	}
 
@@ -79,9 +80,9 @@ func alertEntry() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			jamesfile, err := readJamesfile()
-			exitIfError(err)
+			osutil.ExitIfError(err)
 
-			exitIfError(alertsAck(args[0], jamesfile.File))
+			osutil.ExitIfError(alertsAck(args[0], jamesfile.File))
 		},
 	})
 

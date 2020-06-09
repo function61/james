@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/function61/gokit/osutil"
 	"github.com/function61/james/pkg/domainwhois/domainwhoiswhoisxmlapi"
 	"github.com/scylladb/termtables"
 	"github.com/spf13/cobra"
@@ -20,7 +21,7 @@ func domainsEntry() *cobra.Command {
 		Short: "List tracked domains",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			exitIfError(listDomains())
+			osutil.ExitIfError(listDomains())
 		},
 	})
 
@@ -29,7 +30,7 @@ func domainsEntry() *cobra.Command {
 		Short: "Start tracking whois data of domain",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			exitIfError(addDomain(args[0]))
+			osutil.ExitIfError(addDomain(args[0]))
 		},
 	})
 
@@ -60,7 +61,7 @@ func listDomains() error {
 
 func addDomain(name string) error {
 	jamesfile, err := readJamesfile()
-	exitIfError(err)
+	osutil.ExitIfError(err)
 
 	if jamesfile.File.Credentials.WhoisXmlApi == nil {
 		return errors.New("credentials not set")
