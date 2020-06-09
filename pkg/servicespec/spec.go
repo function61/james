@@ -3,14 +3,15 @@ package servicespec
 import (
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"regexp"
+
 	composetypes "github.com/docker/cli/cli/compose/types"
 	"github.com/function61/gokit/envvar"
 	"github.com/function61/gokit/hcl2json"
 	"github.com/function61/gokit/jsonfile"
 	"github.com/go-yaml/yaml"
-	"io"
-	"os"
-	"regexp"
 )
 
 var one = uint64(1)

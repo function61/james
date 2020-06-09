@@ -3,10 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/function61/gokit/jsonfile"
-	"github.com/function61/james/pkg/jamestypes"
 	"os"
 	"path/filepath"
+
+	"github.com/function61/gokit/jsonfile"
+	"github.com/function61/james/pkg/jamestypes"
 )
 
 const jamesfileFilename = "../jamesfile.json"

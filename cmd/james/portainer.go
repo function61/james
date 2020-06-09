@@ -3,10 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/function61/james/pkg/jamestypes"
-	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
+
+	"github.com/function61/james/pkg/jamestypes"
+	"github.com/spf13/cobra"
 )
 
 func portainerDetails(jamesfile *jamestypes.JamesfileCtx) {

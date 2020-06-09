@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/function61/gokit/ezhttp"
 	"io/ioutil"
+
+	"github.com/function61/gokit/ezhttp"
 )
 
 type Client struct {

@@ -2,10 +2,11 @@ package servicespec
 
 import (
 	"bytes"
-	"github.com/function61/gokit/assert"
 	"io/ioutil"
 	"strings"
 	"testing"
+
+	"github.com/function61/gokit/assert"
 )
 
 type testcase struct {

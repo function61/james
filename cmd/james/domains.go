@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+
 	"github.com/function61/james/pkg/domainwhois/domainwhoiswhoisxmlapi"
 	"github.com/scylladb/termtables"
 	"github.com/spf13/cobra"

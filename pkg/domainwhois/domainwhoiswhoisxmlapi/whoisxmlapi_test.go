@@ -2,10 +2,11 @@ package domainwhoiswhoisxmlapi
 
 import (
 	"encoding/json"
-	"github.com/function61/gokit/assert"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/function61/gokit/assert"
 )
 
 func TestParseAndNormalize(t *testing.T) {

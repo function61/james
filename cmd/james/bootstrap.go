@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/function61/james/pkg/jamestypes"
-	"github.com/function61/james/pkg/shellmultipart"
-	"github.com/spf13/cobra"
 	"io"
 	"log"
 	"os"
 	"regexp"
+
+	"github.com/function61/james/pkg/jamestypes"
+	"github.com/function61/james/pkg/shellmultipart"
+	"github.com/spf13/cobra"
 )
 
 var swarmTokenParseRegex = regexp.MustCompile("(SWMTKN-1-[^ ]+)")

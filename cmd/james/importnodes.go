@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 const (

@@ -6,16 +6,17 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"math/big"
+	"net/http"
+	"os"
+	"strconv"
+
 	"github.com/function61/gokit/ezhttp"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/function61/james/pkg/portainerclient"
 	"github.com/function61/james/pkg/servicespec"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
-	"math/big"
-	"net/http"
-	"os"
-	"strconv"
 )
 
 func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) error {

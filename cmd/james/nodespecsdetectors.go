@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/function61/james/pkg/jamestypes"
-	"github.com/function61/james/pkg/shellmultipart"
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/function61/james/pkg/jamestypes"
+	"github.com/function61/james/pkg/shellmultipart"
 )
 
 const ramDetectScript = `free_output=$(free -m)

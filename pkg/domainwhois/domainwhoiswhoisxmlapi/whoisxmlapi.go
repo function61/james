@@ -3,9 +3,10 @@ package domainwhoiswhoisxmlapi
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/function61/gokit/ezhttp"
 	"github.com/function61/james/pkg/domainwhois"
-	"time"
 )
 
 // jsonwhois.com didn't seem to be able to parse .fi ccTLD dates

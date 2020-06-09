@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/function61/gokit/ezhttp"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/scylladb/termtables"
 	"github.com/spf13/cobra"
-	"strings"
-	"time"
 )
 
 func alertsList(jamesfile jamestypes.Jamesfile) error {

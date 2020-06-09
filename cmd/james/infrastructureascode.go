@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/function61/james/pkg/jamestypes"
-	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/function61/james/pkg/jamestypes"
+	"github.com/spf13/cobra"
 )
 
 func dnsEntry() *cobra.Command {

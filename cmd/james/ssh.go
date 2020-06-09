@@ -3,14 +3,15 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/function61/james/pkg/jamestypes"
-	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/agent"
 	"io"
 	"log"
 	"net"
 	"os"
+
+	"github.com/function61/james/pkg/jamestypes"
+	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 )
 
 func runSshBash(addr string, username string, bashScript string, stdout io.Writer) error {

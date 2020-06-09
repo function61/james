@@ -2,9 +2,10 @@ package shellmultipart
 
 import (
 	"bytes"
-	"github.com/function61/gokit/assert"
 	"strings"
 	"testing"
+
+	"github.com/function61/gokit/assert"
 )
 
 func TestSuccess(t *testing.T) {
