@@ -4,15 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
 
 	composetypes "github.com/docker/cli/cli/compose/types"
-	"github.com/function61/gokit/envvar"
-	"github.com/function61/gokit/hcl2json"
-	"github.com/function61/gokit/jsonfile"
 	"github.com/go-yaml/yaml"
+	"github.com/hashicorp/hcl/v2/hclsimple"
 )
 
 var one = uint64(1)
@@ -27,6 +26,8 @@ var knownUpdateConfigs = map[string]*composetypes.UpdateConfig{
 }
 
 func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes.Config, defaults Defaults) error {
+	// most of the "not empty" checks carried out by HCL layer
+
 	envs, err := convertEnvs(service)
 	if err != nil {
 		return err
@@ -39,9 +40,10 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 	one := "1"
 	envs["LOGGER_SUPPRESS_TIMESTAMPS"] = &one
 
-	if service.BackupCommand != nil && *service.BackupCommand != "" {
-		// TODO: use a label for this instead?
-		envs["BACKUP_COMMAND"] = service.BackupCommand
+	if backup := service.Backup; backup != nil {
+		labels["ubackup.command"] = backup.Command
+
+		envs["BACKUP_COMMAND"] = &backup.Command // deprecated, remove later
 	}
 
 	volumes := []composetypes.ServiceVolumeConfig{}
@@ -111,7 +113,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		labels["edgerouter.auth_sso.users"] = strings.Join(ingress.Users, ",")
 	}
 
-	ramBytes := composetypes.UnitBytes(*service.RamMb) * 1024 * 1024
+	ramBytes := composetypes.UnitBytes(service.RamMb) * 1024 * 1024
 
 	composeService := composetypes.ServiceConfig{
 		Name:        service.Name,
@@ -186,8 +188,8 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		}
 	*/
 
-	if len(service.PersistentVolumes) > 0 && service.BackupCommand == nil {
-		return errors.New(`stateful service - set BackupCommand to at least "" if you don't want backups`)
+	if len(service.PersistentVolumes) > 0 && service.Backup == nil {
+		return errors.New(`stateful service - define at least empty backup section if you really don't want backups`)
 	}
 
 	compose.Services = append(compose.Services, composeService)
@@ -218,17 +220,13 @@ func specToComposeConfig(spec *SpecFile, defaults Defaults) (*composetypes.Confi
 }
 
 func parseSpecFile(content io.Reader) (*SpecFile, error) {
-	specFileAsJson, err := hcl2json.Convert(content)
+	buf, err := ioutil.ReadAll(content)
 	if err != nil {
 		return nil, err
 	}
 
 	spec := &SpecFile{}
-	if err := jsonfile.Unmarshal(specFileAsJson, spec, true); err != nil {
-		return nil, err
-	}
-
-	return spec, nil
+	return spec, hclsimple.Decode("dummy.hcl", buf, nil, spec)
 }
 
 func SpecToComposeByPath(path string) (string, error) {
@@ -266,13 +264,9 @@ func specToCompose(content io.Reader) (string, error) {
 
 func convertEnvs(service ServiceSpec) (composetypes.MappingWithEquals, error) {
 	envs := composetypes.MappingWithEquals{}
-	for _, envSerialized := range service.ENVs {
-		key, value := envvar.Parse(envSerialized)
-		if key == "" {
-			return nil, fmt.Errorf("Invalid format for ENV variable: %s", envSerialized)
-		}
-
-		envs[key] = &value
+	for _, env := range service.ENVs {
+		env := env // pin
+		envs[env.Key] = &env.Value
 	}
 
 	return envs, nil
