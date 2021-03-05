@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/travis/function61/james.svg?style=for-the-badge)](https://travis-ci.org/function61/james)
+![Build status](https://github.com/function61/james/workflows/Build/badge.svg)
 [![Download](https://img.shields.io/bintray/v/function61/dl/james.svg?style=for-the-badge&label=Download)](https://bintray.com/function61/dl/james/_latestVersion#files)
 
 James is your friendly toolbox for infrastructure management. James is actually quite lazy
