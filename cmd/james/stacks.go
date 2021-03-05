@@ -21,6 +21,8 @@ import (
 )
 
 func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) error {
+	ctx := context.TODO() // take from caller
+
 	if retriesLeft <= 0 {
 		return errors.New("stackDeploy retries exceeded")
 	}
@@ -35,7 +37,7 @@ func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) er
 		return err
 	}
 
-	portainer, err := makePortainerClient(*jctx, false)
+	portainer, err := makePortainerClient2(ctx, *jctx)
 	if err != nil {
 		return err
 	}
@@ -43,21 +45,9 @@ func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) er
 	// "prod5:stacks/hellohttp.hcl"
 	jamesRef := jctx.ClusterID + ":" + path
 
-	stacks, err := portainer.ListStacks(context.TODO())
+	stacks, err := portainer.ListStacks(ctx)
 	if err != nil {
-		// display pro-tip
-		rse := &ezhttp.ResponseStatusError{}
-		if isResponseStatusError := errors.As(err, &rse); isResponseStatusError && rse.StatusCode() == http.StatusUnauthorized {
-			// try to renew the token
-			if err := portainerRenewAuthToken(); err != nil {
-				return err
-			}
-
-			// try running the whole func again (we need to reload jamesfile and make new portainer client)
-			return stackDeploy(path, dryRun, stackName, retriesLeft-1)
-		} else {
-			return err
-		}
+		return err
 	}
 
 	diffAndAck := func(previous string, needAck bool) error {
@@ -111,7 +101,7 @@ func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) er
 	} else { // update existing stack
 		stackId := fmt.Sprintf("%d", stack.Id)
 
-		previous, err := portainer.StackFile(stackId)
+		previous, err := portainer.StackFile(context.TODO(), stackId)
 		if err != nil {
 			return err
 		}
@@ -205,7 +195,10 @@ func stackEntry() *cobra.Command {
 	return cmd
 }
 
-func makePortainerClient(jctx jamestypes.JamesfileCtx, missingTokOk bool) (*portainerclient.Client, error) {
+func makePortainerClient(
+	jctx jamestypes.JamesfileCtx,
+	missingTokOk bool,
+) (*portainerclient.Client, error) {
 	if jctx.File.PortainerBaseUrl == "" {
 		return nil, errors.New("PortainerBaseUrl not defined")
 	}
@@ -220,6 +213,44 @@ func makePortainerClient(jctx jamestypes.JamesfileCtx, missingTokOk bool) (*port
 	}
 
 	return portainerclient.New(jctx.File.PortainerBaseUrl, tok, jctx.Cluster.PortainerEndpointId)
+}
+
+// same as 1, but renews auth token
+func makePortainerClient2(
+	ctx context.Context,
+	jctx jamestypes.JamesfileCtx,
+) (*portainerclient.Client, error) {
+	client, err := makePortainerClient(jctx, false)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = client.ListStacks(ctx)
+	if err == nil {
+		return client, nil
+	}
+
+	// was error
+
+	rse := &ezhttp.ResponseStatusError{}
+	if isResponseStatusError := errors.As(err, &rse); !isResponseStatusError || rse.StatusCode() != http.StatusUnauthorized {
+		return nil, err // some other unexpected error
+	}
+
+	// was unauthorized error => try to renew the token
+
+	if err := portainerRenewAuthToken(); err != nil {
+		return nil, err
+	}
+
+	// conf got updated
+	refreshedJctx, err := readJamesfile()
+	if err != nil {
+		return nil, err
+	}
+
+	// now assuming it's all good and we don't need further checks
+	return makePortainerClient(*refreshedJctx, false)
 }
 
 func findPortainerStackByRef(ref string, endpointID string, stacks []portainerclient.Stack) *portainerclient.Stack {
