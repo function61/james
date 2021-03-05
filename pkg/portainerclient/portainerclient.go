@@ -72,6 +72,20 @@ func (p *Client) DockerInfo(ctx context.Context) (*DockerInfoResponse, error) {
 	return res, nil
 }
 
+func (p *Client) ListEndpoints(ctx context.Context) ([]Endpoint, error) {
+	endpoints := []Endpoint{}
+	if _, err := ezhttp.Get(
+		ctx,
+		p.baseUrl+"/api/endpoints",
+		ezhttp.AuthBearer(p.bearerToken),
+		ezhttp.RespondsJson(&endpoints, true),
+	); err != nil {
+		return nil, fmt.Errorf("ListEndpoints: %w", err)
+	}
+
+	return endpoints, nil
+}
+
 func (p *Client) ListStacks(ctx context.Context) ([]Stack, error) {
 	stacks := []Stack{}
 	if _, err := ezhttp.Get(
@@ -86,14 +100,14 @@ func (p *Client) ListStacks(ctx context.Context) ([]Stack, error) {
 	return stacks, nil
 }
 
-func (p *Client) StackFile(stackId string) (string, error) {
+func (p *Client) StackFile(ctx context.Context, stackId string) (string, error) {
 	type response struct {
 		StackFileContent string
 	}
 
 	res := response{}
 	if _, err := ezhttp.Get(
-		context.TODO(),
+		ctx,
 		fmt.Sprintf("%s/api/stacks/%s/file", p.baseUrl, stackId),
 		ezhttp.AuthBearer(p.bearerToken),
 		ezhttp.RespondsJson(&res, true),
