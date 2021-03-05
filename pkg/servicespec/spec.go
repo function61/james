@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"regexp"
+	"strconv"
+	"strings"
 
 	composetypes "github.com/docker/cli/cli/compose/types"
 	"github.com/function61/gokit/envvar"
@@ -30,6 +31,8 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 	if err != nil {
 		return err
 	}
+
+	labels := composetypes.Labels{}
 
 	// try to tell the image's logger system to omit timestamps, since Docker adds those anyway
 	// https://github.com/function61/gokit/blob/7397b370de1295275a4670bce87cc8f5f64e33fa/logex/helpers.go#L27
@@ -73,41 +76,39 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		return fmt.Errorf("unknown HowToUpdate: %s", service.HowToUpdate)
 	}
 
-	if service.IngressPublic != "" && service.IngressAdmin != "" {
-		return fmt.Errorf("both IngressPublic and IngressAdmin cannot be defined")
+	if countTrue(service.IngressPublic != nil, service.IngressBearer != nil, service.IngressSso != nil) > 1 {
+		return errors.New("maximum of one ingress per service exceeded")
 	}
 
-	labels := composetypes.Labels{}
-	if service.IngressPublic != "" {
-		port, rule, err := parseIngressConfig(service.IngressPublic)
-		if err != nil {
-			return err
+	if ingress := service.IngressPublic; ingress != nil {
+		labels["traefik.frontend.rule"] = ingress.Rule
+		if ingress.Port != nil {
+			labels["traefik.port"] = strconv.Itoa(*ingress.Port)
 		}
 
-		labels["traefik.enable"] = "true"
-		labels["traefik.frontend.rule"] = rule
-		labels["traefik.port"] = port
-		labels["traefik.frontend.entryPoints"] = "public_http,public_https"
-
-		if service.IngressPriority != nil {
-			labels["traefik.frontend.priority"] = fmt.Sprintf("%d", *service.IngressPriority)
-		}
+		// requires explicit opt-in, so a key missing does not accidentally expose endpoints to public
+		labels["edgerouter.auth"] = "public"
 	}
 
-	if service.IngressAdmin != "" {
-		port, rule, err := parseIngressConfig(service.IngressAdmin)
-		if err != nil {
-			return err
+	if ingress := service.IngressBearer; ingress != nil {
+		labels["traefik.frontend.rule"] = ingress.Rule
+		if ingress.Port != nil {
+			labels["traefik.port"] = strconv.Itoa(*ingress.Port)
 		}
 
-		labels["traefik.enable"] = "true"
-		labels["traefik.frontend.rule"] = rule
-		labels["traefik.port"] = port
-		labels["traefik.frontend.entryPoints"] = "backoffice"
+		labels["edgerouter.auth"] = "bearer_token"
+		labels["edgerouter.auth_bearer_token"] = ingress.Token
 	}
 
-	if service.RamMb == nil {
-		return errors.New("RAM limit is required")
+	if ingress := service.IngressSso; ingress != nil {
+		labels["traefik.frontend.rule"] = ingress.Rule
+		if ingress.Port != nil {
+			labels["traefik.port"] = strconv.Itoa(*ingress.Port)
+		}
+
+		labels["edgerouter.auth"] = "sso"
+		labels["edgerouter.auth_sso.tenant"] = ingress.Tenant
+		labels["edgerouter.auth_sso.users"] = strings.Join(ingress.Users, ",")
 	}
 
 	ramBytes := composetypes.UnitBytes(*service.RamMb) * 1024 * 1024
@@ -123,6 +124,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		Privileged:  service.Privileged,
 		User:        service.User,
 		Ports:       convertPorts(service),
+		Labels:      labels, // TODO: duplicated here. needed for Edgerouter when in host networking mode
 		Deploy: composetypes.DeployConfig{
 			Mode:         deployMode,
 			Labels:       labels,
@@ -296,21 +298,21 @@ func convertPorts(service ServiceSpec) []composetypes.ServicePortConfig {
 	return composePorts
 }
 
-var parseIngressConfigRe = regexp.MustCompile("^([0-9]+)/(.+)")
-
-func parseIngressConfig(serialized string) (string, string, error) {
-	matches := parseIngressConfigRe.FindStringSubmatch(serialized)
-	if matches == nil {
-		return "", "", errors.New("incorrect format for ingress config")
-	}
-
-	return matches[1], matches[2], nil
-}
-
 func createNetworkConfigIfNotExists(compose *composetypes.Config, networkName string, config composetypes.NetworkConfig) {
 	if _, alreadyExists := compose.Networks[networkName]; alreadyExists {
 		return
 	}
 
 	compose.Networks[networkName] = config
+}
+
+func countTrue(items ...bool) int {
+	sum := 0
+	for _, item := range items {
+		if item {
+			sum++
+		}
+	}
+
+	return sum
 }
