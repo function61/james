@@ -88,6 +88,7 @@ func main() {
 		specToComposeEntry(),
 		domainsEntry(),
 		stackEntry(),
+		webUiEntry(),
 	}
 
 	for _, cmd := range commands {

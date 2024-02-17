@@ -1,0 +1,51 @@
+{{template "header.html" .Std}}
+
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0 text-dark">{{.Std.PageName}}</h1>
+          </div><!-- /.col -->
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="/">Home</a></li>
+              <li class="breadcrumb-item active">{{.Std.PageName}}</li>
+            </ol>
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <div class="content">
+      <div class="container-fluid">
+        <div class="row">
+          {{range .Endpoints}}
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="m-0">
+                  {{.Name}}
+                  {{if eq .Status 1}}<span class="badge badge-success" style="float: right;">Up</span>{{else}}<span class="badge badge-danger" style="float: right;">Down</span>{{end}}
+                </h5>
+              </div>
+              <div class="card-body">
+                <p class="card-text">
+                  {{(index .Snapshots 0).StackCount}} stacks<br />
+                  <span class="text-muted">Docker {{(index .Snapshots 0).DockerVersion}} | {{(index .Snapshots 0).TotalCPU}} CPU | {{humanizebytes (index .Snapshots 0).TotalMemory}}</span>
+              </p>
+                <a href="/clusters/{{.Id}}/stacks" class="btn btn-primary">Select</a>
+                <a target="_blank" href="https://grafana.{{.Name}}.fn61.net/" class="btn btn-default"><i class="fas fa-chart-area"></i> Grafana</a>
+                <a target="_blank" href="https://edgerouter.{{.Name}}.fn61.net/" class="btn btn-default"><i class="fas fa-traffic-light"></i> Edgerouter</a>
+                <a target="_blank" href="https://prometheus.{{.Name}}.fn61.net/" class="btn btn-default"><i class="fab fa-creative-commons-sampling"></i> Prometheus</a>
+              </div>
+            </div>
+          </div>
+          {{end}}
+        </div>
+      </div>
+    </div>
+
+{{template "footer.html" .Std}}
