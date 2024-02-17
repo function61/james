@@ -25,10 +25,10 @@ var knownUpdateConfigs = map[string]*composetypes.UpdateConfig{
 	},
 }
 
-func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes.Config, defaults Defaults) error {
+func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes.Config, defaults Defaults, secrets Secrets) error {
 	// most of the "not empty" checks carried out by HCL layer
 
-	envs, err := convertEnvs(service)
+	envs, err := convertEnvs(service, secrets)
 	if err != nil {
 		return err
 	}
@@ -42,17 +42,26 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 
 	if backup := service.Backup; backup != nil {
 		labels["ubackup.command"] = backup.Command
-
-		envs["BACKUP_COMMAND"] = &backup.Command // deprecated, remove later
 	}
 
 	volumes := []composetypes.ServiceVolumeConfig{}
 	for _, bindMount := range service.BindMounts {
+		bindConfig := func() *composetypes.ServiceVolumeBind {
+			if bindMount.Propagation != "" {
+				return &composetypes.ServiceVolumeBind{
+					Propagation: bindMount.Propagation,
+				}
+			} else {
+				return nil
+			}
+		}()
+
 		volumes = append(volumes, composetypes.ServiceVolumeConfig{
 			Type:     "bind",
 			Source:   bindMount.Host,
 			Target:   bindMount.Container,
 			ReadOnly: bindMount.ReadOnly,
+			Bind:     bindConfig,
 		})
 	}
 	for _, pv := range service.PersistentVolumes {
@@ -77,6 +86,13 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 	if updateConfig == nil {
 		return fmt.Errorf("unknown HowToUpdate: %s", service.HowToUpdate)
 	}
+
+	if service.Network != "own-namespace" && service.Network != "host" {
+		return fmt.Errorf("unsupported network: %s (expecting own-namespace | host)", service.Network)
+	}
+
+	ownNamespace := service.Network == "own-namespace"
+	netHost := service.Network == "host"
 
 	if countTrue(service.IngressPublic != nil, service.IngressBearer != nil, service.IngressSso != nil) > 1 {
 		return errors.New("maximum of one ingress per service exceeded")
@@ -115,6 +131,11 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 
 	ramBytes := composetypes.UnitBytes(service.RamMb) * 1024 * 1024
 
+	securityOpts := []string{}
+	for _, item := range service.SecurityOpts {
+		securityOpts = append(securityOpts, item.Value)
+	}
+
 	composeService := composetypes.ServiceConfig{
 		Name:        service.Name,
 		Image:       service.Image + ":" + service.Version,
@@ -125,20 +146,34 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		CapAdd:      service.Caps,
 		Privileged:  service.Privileged,
 		User:        service.User,
-		Ports:       convertPorts(service),
+		Ports:       convertPorts(service, ownNamespace),
 		Labels:      labels, // TODO: duplicated here. needed for Edgerouter when in host networking mode
+		Restart:     "on-failure",
 		Deploy: composetypes.DeployConfig{
 			Mode:         deployMode,
 			Labels:       labels,
 			Placement:    composetypes.Placement{},
 			UpdateConfig: updateConfig,
+			/* do not use as this is under deploy config
+			RestartPolicy: &composetypes.RestartPolicy{
+				Condition: "on-failure",
+			},
+			*/
 			Resources: composetypes.Resources{
 				Limits: &composetypes.Resource{
 					MemoryBytes: ramBytes,
 				},
 			},
 		},
-		Networks: map[string]*composetypes.ServiceNetworkConfig{},
+		ShmSize: func() string {
+			if service.ShmSizeMb > 0 {
+				return fmt.Sprintf("%dM", service.ShmSizeMb)
+			} else {
+				return ""
+			}
+		}(),
+		SecurityOpt: securityOpts,
+		Networks:    map[string]*composetypes.ServiceNetworkConfig{},
 	}
 
 	if isGlobal && service.Replicas != nil {
@@ -151,14 +186,29 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		composeService.Pid = "host"
 	}
 
-	if service.NetHost {
-		createNetworkConfigIfNotExists(compose, "host", composetypes.NetworkConfig{
-			External: composetypes.External{
-				Name: "host",
-			},
-		})
+	if netHost || ownNamespace {
+		/*
+			createNetworkConfigIfNotExists(compose, "host", composetypes.NetworkConfig{
+				External: composetypes.External{
+					Name: "host",
+				},
+			})
 
-		composeService.Networks["host"] = nil
+			// composeService.Networks["host"] = nil
+		*/
+		// for network mode host we shouldn't use the "networks:\n  host:" idiom and then define
+		// on top level `networks:\n  host:\n    external:\n      name: "host"`
+		//
+		// because with docker-compose (no with Docker Swarm) this results in error:
+		// "Network-scoped alias is supported only for containers in user defined networks"
+		//  https://github.com/docker/compose/issues/3012
+		//
+		// however `network_mode: "host"` doesn't seem to work for Swarm: https://github.com/docker/compose/issues/3012#issuecomment-312414338
+		if netHost {
+			composeService.NetworkMode = "host"
+		} else {
+			// no need to do anything
+		}
 	} else {
 		createNetworkConfigIfNotExists(compose, "default", composetypes.NetworkConfig{
 			External: composetypes.External{
@@ -170,13 +220,19 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		composeService.Networks["default"] = nil
 	}
 
+	couldHavePlacementNodeHostname := !ownNamespace
+
 	if service.PlacementNodeHostname != "" {
+		if !couldHavePlacementNodeHostname {
+			return errors.New("PlacementNodeHostname not supported when using new convention (own-namespace)")
+		}
+
 		composeService.Deploy.Placement.Constraints = []string{
 			"node.hostname == " + service.PlacementNodeHostname,
 		}
 	} else {
 		// prevent human errors
-		if len(service.PersistentVolumes) > 0 {
+		if couldHavePlacementNodeHostname && len(service.PersistentVolumes) > 0 {
 			return errors.New("persistent volumes defined but no placement hostname defined")
 		}
 	}
@@ -197,7 +253,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 	return nil
 }
 
-func specToComposeConfig(spec *SpecFile, defaults Defaults) (*composetypes.Config, error) {
+func specToComposeConfig(spec *SpecFile, defaults Defaults, secrets Secrets) (*composetypes.Config, error) {
 	compose := &composetypes.Config{
 		Version:  "3.5",
 		Volumes:  map[string]composetypes.VolumeConfig{},
@@ -205,13 +261,13 @@ func specToComposeConfig(spec *SpecFile, defaults Defaults) (*composetypes.Confi
 	}
 
 	for _, service := range spec.Services {
-		if err := convertOneService(service, false, compose, defaults); err != nil {
+		if err := convertOneService(service, false, compose, defaults, secrets); err != nil {
 			return nil, err
 		}
 	}
 
 	for _, service := range spec.GlobalServices {
-		if err := convertOneService(service, true, compose, defaults); err != nil {
+		if err := convertOneService(service, true, compose, defaults, secrets); err != nil {
 			return nil, err
 		}
 	}
@@ -236,10 +292,10 @@ func SpecToComposeByPath(path string) (string, error) {
 	}
 	defer specFile.Close()
 
-	return specToCompose(specFile)
+	return specToCompose(specFile, readSecrets())
 }
 
-func specToCompose(content io.Reader) (string, error) {
+func specToCompose(content io.Reader, secrets Secrets) (string, error) {
 	defaults := Defaults{
 		DockerNetworkName: "fn61",
 	}
@@ -249,7 +305,7 @@ func specToCompose(content io.Reader) (string, error) {
 		return "", err
 	}
 
-	composeConfig, err := specToComposeConfig(spec, defaults)
+	composeConfig, err := specToComposeConfig(spec, defaults, secrets)
 	if err != nil {
 		return "", err
 	}
@@ -262,23 +318,55 @@ func specToCompose(content io.Reader) (string, error) {
 	return string(yamlBytes), nil
 }
 
-func convertEnvs(service ServiceSpec) (composetypes.MappingWithEquals, error) {
+type Secrets map[string]string
+
+func convertEnvs(service ServiceSpec, secrets Secrets) (composetypes.MappingWithEquals, error) {
 	envs := composetypes.MappingWithEquals{}
+	withErr := func(err error) (composetypes.MappingWithEquals, error) {
+		return envs, fmt.Errorf("convertEnvs: %w", err)
+	}
+
 	for _, env := range service.ENVs {
 		env := env // pin
-		envs[env.Key] = &env.Value
+		value := env.Value
+
+		if secretKey := env.Secret; secretKey != "" {
+
+			const secretPlaceholder = "{secret}"
+
+			if !strings.Contains(value, secretPlaceholder) {
+				return withErr(fmt.Errorf("trying to use secret '%s' but placeholder '%s' not found", secretKey, secretPlaceholder))
+			}
+
+			secret, found := secrets[secretKey]
+			if !found {
+				return withErr(fmt.Errorf("secret not found: %s", secretKey))
+			}
+
+			value = strings.ReplaceAll(value, secretPlaceholder, secret)
+		}
+
+		envs[env.Key] = &value
 	}
 
 	return envs, nil
 }
 
-func convertPorts(service ServiceSpec) []composetypes.ServicePortConfig {
+func convertPorts(service ServiceSpec, ownNamespace bool) []composetypes.ServicePortConfig {
 	composePorts := []composetypes.ServicePortConfig{}
 
 	convertOneType := func(ports []Port, tcpOrUdp string) {
 		for _, port := range ports {
+			mode := func() string {
+				if ownNamespace {
+					return ""
+				} else {
+					return "ingress" // Swarm concept
+				}
+			}()
+
 			composePorts = append(composePorts, composetypes.ServicePortConfig{
-				Mode:      "ingress",
+				Mode:      mode,
 				Target:    port.Container,
 				Published: port.Public,
 				Protocol:  tcpOrUdp,

@@ -13,8 +13,9 @@ type ServiceSpec struct {
 	HowToUpdate string  `json:"how_to_update" hcl:"how_to_update"`
 	Version     string  `json:"version" hcl:"version"`
 	ENVs        []struct {
-		Key   string `json:"key" hcl:"key,label"`
-		Value string `json:"value" hcl:"value"`
+		Key    string `json:"key" hcl:"key,label"`
+		Value  string `json:"value" hcl:"value"`
+		Secret string `json:"secret" hcl:"secret,optional"`
 	} `json:"env" hcl:"env,block"`
 	Command               []string `json:"command" hcl:"command,optional"`
 	Privileged            bool     `json:"privileged" hcl:"privileged,optional"`
@@ -22,15 +23,16 @@ type ServiceSpec struct {
 	User                  string   `json:"user" hcl:"user,optional"`
 	Caps                  []string `json:"caps" hcl:"caps,optional"`
 	PlacementNodeHostname string   `json:"placement_node_hostname" hcl:"placement_node_hostname,optional"`
+	Network               string   `json:"network" hcl:"network"`
 	IngressPublic         *struct {
-		SharedIngressSettings `hcl:",remain"`
+		CommonIngressSettings `hcl:",remain"`
 	} `json:"ingress_public" hcl:"ingress_public,block"`
 	IngressBearer *struct {
-		SharedIngressSettings `hcl:",remain"`
+		CommonIngressSettings `hcl:",remain"`
 		Token                 string `json:"token" hcl:"token"`
 	} `json:"ingress_bearer" hcl:"ingress_bearer,block"`
 	IngressSso *struct {
-		SharedIngressSettings `hcl:",remain"`
+		CommonIngressSettings `hcl:",remain"`
 		Users                 []string `json:"users" hcl:"users"`
 		Tenant                string   `json:"tenant" hcl:"tenant"`
 	} `json:"ingress_sso" hcl:"ingress_sso,block"`
@@ -38,17 +40,21 @@ type ServiceSpec struct {
 		Command string `json:"command" hcl:"command"`
 		// TODO: file extension
 	} `json:"backup" hcl:"backup,block"`
-	RamMb             uint64             `json:"ram_mb" hcl:"ram_mb"`
-	PidHost           bool               `json:"pid_host" hcl:"pid_host,optional"`
-	NetHost           bool               `json:"net_host" hcl:"net_host,optional"`
+	RamMb     uint64 `json:"ram_mb" hcl:"ram_mb"`
+	ShmSizeMb uint64 `json:"shm_size_mb" hcl:"shm_size_mb,optional"`
+	PidHost   bool   `json:"pid_host" hcl:"pid_host,optional"`
+	// NetHost      bool   `json:"net_host" hcl:"net_host,optional"`
+	SecurityOpts []struct {
+		Value string `json:"value" hcl:"value,label"`
+	} `json:"security_opt" hcl:"security_opt,block"`
 	TcpPorts          []Port             `json:"tcp_port" hcl:"tcp_port,block"`
 	UdpPorts          []Port             `json:"udp_port" hcl:"udp_port,block"`
 	PersistentVolumes []PersistentVolume `json:"persistentvolume" hcl:"persistentvolume,block"`
 	BindMounts        []BindMount        `json:"bindmount" hcl:"bindmount,block"`
 }
 
-// common to all ingresses (public/password/SSO)
-type SharedIngressSettings struct {
+// common to all ingresses (public/bearer/SSO)
+type CommonIngressSettings struct {
 	Rule string `json:"rule" hcl:"rule"`
 	Port *int   `json:"port" hcl:"port"`
 }
@@ -64,9 +70,10 @@ type PersistentVolume struct {
 }
 
 type BindMount struct {
-	Host      string `json:"host" hcl:"host"`
-	Container string `json:"container" hcl:"container"`
-	ReadOnly  bool   `json:"readonly" hcl:"readonly"`
+	Host        string `json:"host" hcl:"host"`
+	Container   string `json:"container" hcl:"container"`
+	ReadOnly    bool   `json:"readonly" hcl:"readonly,optional"`
+	Propagation string `json:"propagation" hcl:"propagation,optional"`
 }
 
 type Defaults struct {
