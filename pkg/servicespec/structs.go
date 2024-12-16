@@ -21,6 +21,7 @@ type ServiceSpec struct {
 	Privileged            bool     `json:"privileged" hcl:"privileged,optional"`
 	Devices               []string `json:"devices" hcl:"devices,optional"`
 	User                  string   `json:"user" hcl:"user,optional"`
+	RestartPolicy         string   `json:"restart_policy" hcl:"restart_policy,optional"`
 	Caps                  []string `json:"caps" hcl:"caps,optional"`
 	PlacementNodeHostname string   `json:"placement_node_hostname" hcl:"placement_node_hostname,optional"`
 	Network               string   `json:"network" hcl:"network"`

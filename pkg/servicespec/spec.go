@@ -136,6 +136,15 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		securityOpts = append(securityOpts, item.Value)
 	}
 
+	// https://docs.docker.com/engine/containers/start-containers-automatically/#use-a-restart-policy
+	restartPolicy := func() string {
+		if explicitPolicy := service.RestartPolicy; explicitPolicy != "" {
+			return explicitPolicy
+		} else { // no explicit defined => default to on-failure
+			return "on-failure"
+		}
+	}()
+
 	composeService := composetypes.ServiceConfig{
 		Name:        service.Name,
 		Image:       service.Image + ":" + service.Version,
@@ -148,7 +157,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		User:        service.User,
 		Ports:       convertPorts(service, ownNamespace),
 		Labels:      labels, // TODO: duplicated here. needed for Edgerouter when in host networking mode
-		Restart:     "on-failure",
+		Restart:     restartPolicy,
 		Deploy: composetypes.DeployConfig{
 			Mode:         deployMode,
 			Labels:       labels,
