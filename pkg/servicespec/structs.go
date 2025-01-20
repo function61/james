@@ -11,7 +11,7 @@ type ServiceSpec struct {
 	Image       string  `json:"image" hcl:"image"`
 	Replicas    *uint64 `json:"replicas" hcl:"replicas"`
 	HowToUpdate string  `json:"how_to_update" hcl:"how_to_update"`
-	Version     string  `json:"version" hcl:"version"`
+	Version     string  `json:"version" hcl:"version"` // tag name or ("sha256:..." if pull by digest)
 	ENVs        []struct {
 		Key    string `json:"key" hcl:"key,label"`
 		Value  string `json:"value" hcl:"value"`

@@ -146,8 +146,14 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 	}()
 
 	composeService := composetypes.ServiceConfig{
-		Name:        service.Name,
-		Image:       service.Image + ":" + service.Version,
+		Name: service.Name,
+		Image: func() string {
+			if strings.HasPrefix(service.Version, "sha256:") {
+				return service.Image + "@" + service.Version // redis@sha256:...
+			} else {
+				return service.Image + ":" + service.Version // redis:latest
+			}
+		}(),
 		Command:     service.Command,
 		Environment: envs,
 		Volumes:     volumes,
