@@ -297,7 +297,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 
 func specToComposeConfig(spec *SpecFile, defaults Defaults, secrets Secrets) (*composetypes.Config, error) {
 	compose := &composetypes.Config{
-		Version:  "3.5",
+		// specifying `Version` would be deprecated
 		Volumes:  map[string]composetypes.VolumeConfig{},
 		Networks: map[string]composetypes.NetworkConfig{},
 	}
@@ -357,7 +357,10 @@ func specToCompose(content io.Reader, secrets Secrets) (string, error) {
 		return "", err
 	}
 
-	return string(yamlBytes), nil
+	// new docker-compose yells that this is deprecated, even if set to empty string while the official types
+	// actually force this to be present when marshaled:
+	//   https://github.com/docker/cli/blob/a187fa5d2d0d5f12db920734e425afc758e98ead/cli/compose/types/types.go#L102
+	return strings.Replace(string(yamlBytes), "version: \"\"\n", "", 1), nil
 }
 
 type Secrets map[string]string
