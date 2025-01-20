@@ -24,8 +24,11 @@ type ServiceSpec struct {
 	RestartPolicy         string   `json:"restart_policy" hcl:"restart_policy,optional"`
 	Caps                  []string `json:"caps" hcl:"caps,optional"`
 	PlacementNodeHostname string   `json:"placement_node_hostname" hcl:"placement_node_hostname,optional"`
-	Network               string   `json:"network" hcl:"network"`
-	IngressPublic         *struct {
+	Net                   *struct {
+		Mode string `json:"mode" hcl:"mode"`
+		IP   string `json:"ip" hcl:"ip,optional"`
+	} `json:"net" hcl:"net,block"`
+	IngressPublic *struct {
 		CommonIngressSettings `hcl:",remain"`
 	} `json:"ingress_public" hcl:"ingress_public,block"`
 	IngressBearer *struct {

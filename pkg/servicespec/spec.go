@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -87,12 +88,14 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		return fmt.Errorf("unknown HowToUpdate: %s", service.HowToUpdate)
 	}
 
-	if service.Network != "own-namespace" && service.Network != "host" {
-		return fmt.Errorf("unsupported network: %s (expecting own-namespace | host)", service.Network)
+	netMode := service.Net.Mode
+
+	if netMode != "own-bridge-namespace" && netMode != "host" {
+		return fmt.Errorf("unsupported network: %s (expecting own-bridge-namespace | host)", netMode)
 	}
 
-	ownNamespace := service.Network == "own-namespace"
-	netHost := service.Network == "host"
+	ownNamespace := netMode == "own-bridge-namespace"
+	netHost := netMode == "host"
 
 	if countTrue(service.IngressPublic != nil, service.IngressBearer != nil, service.IngressSso != nil) > 1 {
 		return errors.New("maximum of one ingress per service exceeded")
@@ -221,8 +224,32 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		// however `network_mode: "host"` doesn't seem to work for Swarm: https://github.com/docker/compose/issues/3012#issuecomment-312414338
 		if netHost {
 			composeService.NetworkMode = "host"
-		} else {
-			// no need to do anything
+		} else { // ownNamespace
+			ip := net.ParseIP(service.Net.IP).To4()
+			if ip == nil {
+				return fmt.Errorf("when net.mode == '%s' need IP; empty given", netMode)
+			}
+
+			if ip[3] == 1 {
+				return fmt.Errorf("IP address cannot be x.y.z.1, is reserved for gateway; got %s", ip.String())
+			}
+
+			// "10.61.3.2" => "10.61.3.1/24"
+			subnet := net.IPv4(ip[0], ip[1], ip[2], 1).String() + "/24"
+
+			createNetworkConfigIfNotExists(compose, "default", composetypes.NetworkConfig{
+				Ipam: composetypes.IPAMConfig{
+					Config: []*composetypes.IPAMPool{
+						{
+							Subnet: subnet,
+						},
+					},
+				},
+			})
+
+			composeService.Networks["default"] = &composetypes.ServiceNetworkConfig{
+				Ipv4Address: service.Net.IP,
+			}
 		}
 	} else {
 		createNetworkConfigIfNotExists(compose, "default", composetypes.NetworkConfig{
