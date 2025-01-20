@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/apcera/termtables v0.0.0-20170405184538-bcbc5dc54055 // indirect
-	github.com/docker/cli v0.0.0-20181026145426-51668a30f262
+	github.com/docker/cli v27.5.0+incompatible
 	github.com/function61/gokit v0.0.0-20200608105953-12235c68c38b
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/hashicorp/hcl v1.0.0 // indirect

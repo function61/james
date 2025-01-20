@@ -178,7 +178,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 			},
 			*/
 			Resources: composetypes.Resources{
-				Limits: &composetypes.Resource{
+				Limits: &composetypes.ResourceLimit{
 					MemoryBytes: ramBytes,
 				},
 			},
