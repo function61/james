@@ -6,7 +6,7 @@
 	"builders": [
 		{
 			"name": "default",
-			"uses": "docker://fn61/buildkit-golang:20250109_1140_037f68db",
+			"uses": "docker://fn61/buildkit-golang:20251124_1405_720e0dc0",
 			"mount_destination": "/workspace",
 			"workdir": "/workspace",
 			"dev_http_ingress": "80",
@@ -14,21 +14,6 @@
 				"build": ["build-go-project.sh", "--directory=cmd/james/", "--binary-basename=james"],
 				"dev": ["bash"]
 			}
-		},
-		{
-			"name": "publisher",
-			"uses": "docker://fn61/buildkit-publisher:20190206_1058_d35b3939",
-			"mount_destination": "/workspace",
-			"commands": {
-				"publish": ["publish.sh", "rel/*"],
-				"dev": ["bash"]
-			},
-			"env": {
-				"BINTRAY_PROJECT": "function61/dl/james"
-			},
-			"pass_envs": [
-				"BINTRAY_CREDS"
-			]
 		}
 	],
 	"docker_images": [],
