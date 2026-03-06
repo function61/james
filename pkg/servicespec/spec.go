@@ -36,6 +36,10 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 
 	labels := composetypes.Labels{}
 
+	for _, labelPair := range service.Labels {
+		labels[labelPair.Key] = labelPair.Value
+	}
+
 	// try to tell the image's logger system to omit timestamps, since Docker adds those anyway
 	// https://github.com/function61/gokit/blob/7397b370de1295275a4670bce87cc8f5f64e33fa/logex/helpers.go#L27
 	one := "1"

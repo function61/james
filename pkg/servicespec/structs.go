@@ -17,6 +17,10 @@ type ServiceSpec struct {
 		Value  string `json:"value" hcl:"value"`
 		Secret string `json:"secret" hcl:"secret,optional"`
 	} `json:"env" hcl:"env,block"`
+	Labels []struct {
+		Key   string `json:"key" hcl:"key,label"`
+		Value string `json:"value" hcl:"value"`
+	} `json:"label" hcl:"label,block"`
 	Command               []string `json:"command" hcl:"command,optional"`
 	Privileged            bool     `json:"privileged" hcl:"privileged,optional"`
 	Devices               []string `json:"devices" hcl:"devices,optional"`
