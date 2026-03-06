@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log/slog"
 	"net"
 	"os"
 	"strconv"
@@ -291,7 +292,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 	} else {
 		// prevent human errors
 		if couldHavePlacementNodeHostname && len(service.PersistentVolumes) > 0 {
-			return errors.New("persistent volumes defined but no placement hostname defined")
+			slog.Warn("persistent volumes defined but no placement hostname defined")
 		}
 	}
 
