@@ -251,8 +251,9 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 				return fmt.Errorf("IP address cannot be x.y.z.1, is reserved for gateway; got %s", ip.String())
 			}
 
-			// "10.61.3.2" => "10.61.3.1/24"
-			subnet := net.IPv4(ip[0], ip[1], ip[2], 1).String() + "/24"
+			// "10.61.3.2" => "10.61.3.0/24"
+			// docker-compose Go version requires last octet to be 0, before IIRC for some reason we *had* to specify 1.
+			subnet := net.IPv4(ip[0], ip[1], ip[2], 0).String() + "/24"
 
 			createNetworkConfigIfNotExists(compose, "default", composetypes.NetworkConfig{
 				Ipam: composetypes.IPAMConfig{
