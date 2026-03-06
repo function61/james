@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	composetypes "github.com/docker/cli/cli/compose/types"
 	"github.com/go-yaml/yaml"
@@ -193,6 +194,17 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 			} else {
 				return ""
 			}
+		}(),
+		StopGracePeriod: func() *composetypes.Duration {
+			if stopGracePeriod := service.StopGracePeriod; stopGracePeriod != nil {
+				dur, err := time.ParseDuration(*stopGracePeriod)
+				if err != nil {
+					panic(err)
+				}
+				return (*composetypes.Duration)(&dur)
+			}
+
+			return nil
 		}(),
 		SecurityOpt: securityOpts,
 		Networks:    map[string]*composetypes.ServiceNetworkConfig{},

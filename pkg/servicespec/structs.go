@@ -28,6 +28,7 @@ type ServiceSpec struct {
 	RestartPolicy         string   `json:"restart_policy" hcl:"restart_policy,optional"`
 	Caps                  []string `json:"caps" hcl:"caps,optional"`
 	PlacementNodeHostname string   `json:"placement_node_hostname" hcl:"placement_node_hostname,optional"`
+	StopGracePeriod       *string  `json:"stop_grace_period" hcl:"stop_grace_period,optional"` // can't use duration because HCL doesn't roundtrip it well
 	Net                   *struct {
 		Mode string `json:"mode" hcl:"mode"`
 		IP   string `json:"ip" hcl:"ip,optional"`
