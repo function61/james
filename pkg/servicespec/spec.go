@@ -409,7 +409,10 @@ func convertEnvs(service ServiceSpec, secrets Secrets) (composetypes.MappingWith
 			value = strings.ReplaceAll(value, secretPlaceholder, secret)
 		}
 
-		envs[env.Key] = &value
+		// https://docs.docker.com/reference/compose-file/interpolation/
+		interpCanceled := strings.ReplaceAll(value, "$", "$$")
+
+		envs[env.Key] = &interpCanceled
 	}
 
 	return envs, nil
