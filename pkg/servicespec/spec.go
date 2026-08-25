@@ -187,6 +187,12 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 			Resources: composetypes.Resources{
 				Limits: &composetypes.ResourceLimit{
 					MemoryBytes: ramBytes,
+					NanoCPUs: func() string {
+						if service.CPUs == 0 {
+							return ""
+						}
+						return strconv.FormatFloat(service.CPUs, 'f', -1, 64)
+					}(),
 				},
 			},
 		},

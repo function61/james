@@ -50,9 +50,10 @@ type ServiceSpec struct {
 		Command string `json:"command" hcl:"command"`
 		// TODO: file extension
 	} `json:"backup" hcl:"backup,block"`
-	RamMb     uint64 `json:"ram_mb" hcl:"ram_mb"`
-	ShmSizeMb uint64 `json:"shm_size_mb" hcl:"shm_size_mb,optional"`
-	PidHost   bool   `json:"pid_host" hcl:"pid_host,optional"`
+	CPUs      float64 `json:"cpus" hcl:"cpus,optional"`
+	RamMb     uint64  `json:"ram_mb" hcl:"ram_mb"`
+	ShmSizeMb uint64  `json:"shm_size_mb" hcl:"shm_size_mb,optional"`
+	PidHost   bool    `json:"pid_host" hcl:"pid_host,optional"`
 	// NetHost      bool   `json:"net_host" hcl:"net_host,optional"`
 	SecurityOpts []struct {
 		Value string `json:"value" hcl:"value,label"`
