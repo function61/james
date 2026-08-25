@@ -6,6 +6,7 @@ import (
 
 	"github.com/function61/gokit/dynversion"
 	"github.com/function61/gokit/osutil"
+	"github.com/function61/james/pkg/dockervolumetransfer"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/scylladb/termtables"
 	"github.com/spf13/cobra"
@@ -81,6 +82,7 @@ func main() {
 		monitorsEntry(),
 		nodesEntry(),
 		sshEntry(),
+		dockervolumetransfer.EntryPoint(),
 		vmImagesEntry(),
 		portainerEntry(),
 		iacEntry(),
