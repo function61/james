@@ -21,6 +21,7 @@ type ServiceSpec struct {
 		Key   string `json:"key" hcl:"key,label"`
 		Value string `json:"value" hcl:"value"`
 	} `json:"label" hcl:"label,block"`
+	Entrypoint            []string `json:"entrypoint" hcl:"entrypoint,optional"`
 	Command               []string `json:"command" hcl:"command,optional"`
 	Privileged            bool     `json:"privileged" hcl:"privileged,optional"`
 	Devices               []string `json:"devices" hcl:"devices,optional"`

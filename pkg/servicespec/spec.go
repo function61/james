@@ -163,6 +163,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 				return service.Image + ":" + service.Version // redis:latest
 			}
 		}(),
+		Entrypoint:  service.Entrypoint,
 		Command:     service.Command,
 		Environment: envs,
 		Volumes:     volumes,
