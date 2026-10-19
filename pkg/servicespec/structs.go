@@ -34,6 +34,7 @@ type ServiceSpec struct {
 		Mode string `json:"mode" hcl:"mode"`
 		IP   string `json:"ip" hcl:"ip,optional"`
 	} `json:"net" hcl:"net,block"`
+	Hostname      string `json:"hostname" hcl:"hostname,optional"`
 	IngressPublic *struct {
 		CommonIngressSettings `hcl:",remain"`
 	} `json:"ingress_public" hcl:"ingress_public,block"`

@@ -216,6 +216,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		}(),
 		SecurityOpt: securityOpts,
 		Networks:    map[string]*composetypes.ServiceNetworkConfig{},
+		Hostname:    service.Hostname,
 	}
 
 	if isGlobal && service.Replicas != nil {
