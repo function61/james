@@ -15,13 +15,13 @@ type NodeSpecs struct {
 	KernelVersion string  `json:"kernel_version"`
 	OsRelease     string  `json:"os_release"`
 	DockerVersion string  `json:"docker_version"`
-	RamGb         float64 `json:"ram_gb"`
+	RAMGb         float64 `json:"ram_gb"`
 	DiskGb        float64 `json:"disk_gb"`
 }
 
 type Jamesfile struct {
 	Domain                           string                    `json:"domain"`
-	PortainerBaseUrl                 string                    `json:"portainer_baseurl"`
+	PortainerBaseURL                 string                    `json:"portainer_baseurl"`
 	Clusters                         map[string]*ClusterConfig `json:"clusters"`
 	AlertManagerEndpoint             string                    `json:"AlertManagerEndpoint"`
 	InfrastructureAsCodeImageVersion string                    `json:"InfrastructureAsCodeImageVersion"`
@@ -36,7 +36,7 @@ type ClusterConfig struct {
 	ID                   string  `json:"id"`
 	SwarmManagerName     string  `json:"swarm_manager_name"`
 	SwarmJoinTokenWorker string  `json:"swarm_jointoken_worker"`
-	PortainerEndpointId  string  `json:"portainer_endpoint_id"`
+	PortainerEndpointID  string  `json:"portainer_endpoint_id"`
 	Nodes                []*Node `json:"nodes"`
 }
 
@@ -52,7 +52,7 @@ type Credentials struct {
 	Cloudflare   *UsernamePasswordCredentials `json:"cloudflare"`
 	DigitalOcean *BareTokenCredential         `json:"digitalocean"`
 	Hetzner      *BareTokenCredential         `json:"hetzner"`
-	WhoisXmlApi  *BareTokenCredential         `json:"whoisxmlapi"`
+	WhoisXMLAPI  *BareTokenCredential         `json:"whoisxmlapi"`
 	Portainer    *UsernamePasswordCredentials `json:"portainer"`
 	PortainerTok *BareTokenCredential         `json:"portainer_shortlived_bearertoken"`
 }

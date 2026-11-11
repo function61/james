@@ -23,15 +23,15 @@ func readJamesfile() (*jamestypes.JamesfileCtx, error) {
 		return nil, err
 	}
 
-	clusterId := filepath.Base(wd)
-	if _, exists := jf.Clusters[clusterId]; !exists {
-		return nil, fmt.Errorf("unknown cluster: %s", clusterId)
+	clusterID := filepath.Base(wd)
+	if _, exists := jf.Clusters[clusterID]; !exists {
+		return nil, fmt.Errorf("unknown cluster: %s", clusterID)
 	}
 
 	return &jamestypes.JamesfileCtx{
 		File:      jf,
-		ClusterID: clusterId,
-		Cluster:   jf.Clusters[clusterId],
+		ClusterID: clusterID,
+		Cluster:   jf.Clusters[clusterID],
 	}, nil
 }
 

@@ -33,9 +33,9 @@ func monitorsList(jamesfile jamestypes.Jamesfile) error {
 
 	for _, monitor := range config.Monitors {
 		tbl.AddRow(
-			monitor.Id,
+			monitor.ID,
 			boolToCheckmarkString(monitor.Enabled),
-			monitor.Url,
+			monitor.URL,
 			monitor.Find)
 	}
 
@@ -51,9 +51,9 @@ func monitorsCreate(url string, findString string, jamesfile jamestypes.Jamesfil
 	}
 
 	monitor := Monitor{
-		Id:      cryptorandombytes.Hex(3),
+		ID:      cryptorandombytes.Hex(3),
 		Enabled: true,
-		Url:     url,
+		URL:     url,
 		Find:    findString,
 	}
 
@@ -175,7 +175,7 @@ func enableOrDisableMonitor(id string, enable bool, monitors []Monitor) ([]Monit
 
 	found := false
 	for _, monitor := range monitors {
-		if monitor.Id == id {
+		if monitor.ID == id {
 			if monitor.Enabled == enable {
 				return nil, errors.New("would not change Enabled state")
 			}
@@ -196,7 +196,7 @@ func enableOrDisableMonitor(id string, enable bool, monitors []Monitor) ([]Monit
 
 func deleteMonitor(id string, monitors []Monitor) ([]Monitor, error) {
 	for idx, monitor := range monitors {
-		if monitor.Id == id {
+		if monitor.ID == id {
 			return append(monitors[:idx], monitors[idx+1:]...), nil
 		}
 	}
@@ -218,9 +218,9 @@ type Config struct {
 }
 
 type Monitor struct {
-	Id      string `json:"id"`
+	ID      string `json:"id"`
 	Enabled bool   `json:"enabled"`
-	Url     string `json:"url"`
+	URL     string `json:"url"`
 	Find    string `json:"find"`
 }
 

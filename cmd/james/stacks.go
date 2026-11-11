@@ -79,7 +79,7 @@ func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) er
 		return nil
 	}
 
-	stack := findPortainerStackByRef(jamesRef, jctx.Cluster.PortainerEndpointId, stacks)
+	stack := findPortainerStackByRef(jamesRef, jctx.Cluster.PortainerEndpointID, stacks)
 	if stack == nil { // new stack
 		if stackName == "" {
 			return errors.New("creation of new stack requires --name CLI arg")
@@ -99,9 +99,9 @@ func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) er
 			return err
 		}
 	} else { // update existing stack
-		stackId := fmt.Sprintf("%d", stack.Id)
+		stackID := fmt.Sprintf("%d", stack.ID)
 
-		previous, err := portainer.StackFile(context.TODO(), stackId)
+		previous, err := portainer.StackFile(context.TODO(), stackID)
 		if err != nil {
 			return err
 		}
@@ -114,7 +114,7 @@ func stackDeploy(path string, dryRun bool, stackName string, retriesLeft int) er
 			return nil
 		}
 
-		if err := portainer.UpdateStack(context.TODO(), stackId, jamesRef, updated); err != nil {
+		if err := portainer.UpdateStack(context.TODO(), stackID, jamesRef, updated); err != nil {
 			return err
 		}
 	}
@@ -143,12 +143,12 @@ func stackRm(path string) error {
 		return err
 	}
 
-	stack := findPortainerStackByRef(jamesRef, jctx.Cluster.PortainerEndpointId, stacks)
+	stack := findPortainerStackByRef(jamesRef, jctx.Cluster.PortainerEndpointID, stacks)
 	if stack == nil {
 		return fmt.Errorf("stack to delete not found: %s", path)
 	}
 
-	return portainer.DeleteStack(context.TODO(), stack.Id)
+	return portainer.DeleteStack(context.TODO(), stack.ID)
 }
 
 func stackDeployEntry() *cobra.Command {
@@ -199,20 +199,18 @@ func makePortainerClient(
 	jctx jamestypes.JamesfileCtx,
 	missingTokOk bool,
 ) (*portainerclient.Client, error) {
-	if jctx.File.PortainerBaseUrl == "" {
+	if jctx.File.PortainerBaseURL == "" {
 		return nil, errors.New("PortainerBaseUrl not defined")
 	}
 
 	tok := ""
 	if jctx.File.Credentials.PortainerTok != nil {
 		tok = string(*jctx.File.Credentials.PortainerTok)
-	} else {
-		if !missingTokOk {
-			return nil, errors.New("missing PortainerTok")
-		}
+	} else if !missingTokOk {
+		return nil, errors.New("missing PortainerTok")
 	}
 
-	return portainerclient.New(jctx.File.PortainerBaseUrl, tok, jctx.Cluster.PortainerEndpointId)
+	return portainerclient.New(jctx.File.PortainerBaseURL, tok, jctx.Cluster.PortainerEndpointID)
 }
 
 // same as 1, but renews auth token

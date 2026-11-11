@@ -81,7 +81,7 @@ docker service create \
 
 	stdoutTee := io.MultiWriter(os.Stdout, sshStdoutCopy)
 
-	if err := runSshBash(
+	if err := runSSHBash(
 		sshDefaultPort(node.Addr),
 		node.Username,
 		commands.GetMultipartShellScript(),

@@ -28,12 +28,12 @@ func TestDeleteMonitor(t *testing.T) {
 	result, _ := deleteMonitor("1", getDummyMonitors())
 
 	assert.Assert(t, len(result) == 1)
-	assert.EqualString(t, result[0].Url, "https://zombo.com/")
+	assert.EqualString(t, result[0].URL, "https://zombo.com/")
 
 	result, _ = deleteMonitor("2", getDummyMonitors())
 
 	assert.Assert(t, len(result) == 1)
-	assert.EqualString(t, result[0].Url, "http://example.com/")
+	assert.EqualString(t, result[0].URL, "http://example.com/")
 
 	_, err := deleteMonitor("3", getDummyMonitors())
 
@@ -43,15 +43,15 @@ func TestDeleteMonitor(t *testing.T) {
 func getDummyMonitors() []Monitor {
 	return []Monitor{
 		{
-			Id:      "1",
+			ID:      "1",
 			Enabled: true,
-			Url:     "http://example.com/",
+			URL:     "http://example.com/",
 			Find:    "foo",
 		},
 		{
-			Id:      "2",
+			ID:      "2",
 			Enabled: false,
-			Url:     "https://zombo.com/",
+			URL:     "https://zombo.com/",
 			Find:    "Welcome to zombo.com",
 		},
 	}

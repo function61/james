@@ -2,7 +2,7 @@ package servicespec
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -25,8 +25,6 @@ func TestSpecToCompose(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test // pin
-
 		t.Run(test.title, func(t *testing.T) {
 			actualOutput, err := specToCompose(bytes.NewBufferString(test.input), Secrets{})
 
@@ -42,7 +40,7 @@ func TestSpecToCompose(t *testing.T) {
 }
 
 func caseFromFile(title string) testcase {
-	buf, err := ioutil.ReadFile("testdata/" + title + ".txt")
+	buf, err := os.ReadFile("testdata/" + title + ".txt")
 	if err != nil {
 		panic(err)
 	}

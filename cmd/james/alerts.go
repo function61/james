@@ -111,5 +111,5 @@ func truncate(input string, maxLen int) string {
 }
 
 func onelinerize(input string) string {
-	return strings.Replace(input, "\n", "\\n", -1)
+	return strings.ReplaceAll(input, "\n", "\\n")
 }

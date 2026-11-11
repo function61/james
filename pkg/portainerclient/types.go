@@ -6,14 +6,14 @@ type EnvPair struct {
 }
 
 type Stack struct {
-	Id         int
+	ID         int `json:"Id"`
 	EndpointID int
 	Name       string
 	Env        []EnvPair
 }
 
 type Endpoint struct {
-	Id        int
+	ID        int `json:"Id"`
 	Name      string
 	Status    int
 	Snapshots []struct {

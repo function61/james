@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log/slog"
 	"net"
 	"os"
@@ -139,7 +138,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		labels["edgerouter.auth_sso.users"] = strings.Join(ingress.Users, ",")
 	}
 
-	ramBytes := composetypes.UnitBytes(service.RamMb) * 1024 * 1024
+	ramBytes := composetypes.UnitBytes(service.RAMMb) * 1024 * 1024
 
 	securityOpts := []string{}
 	for _, item := range service.SecurityOpts {
@@ -299,11 +298,8 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		composeService.Deploy.Placement.Constraints = []string{
 			"node.hostname == " + service.PlacementNodeHostname,
 		}
-	} else {
-		// prevent human errors
-		if couldHavePlacementNodeHostname && len(service.PersistentVolumes) > 0 {
-			slog.Warn("persistent volumes defined but no placement hostname defined")
-		}
+	} else if couldHavePlacementNodeHostname && len(service.PersistentVolumes) > 0 { // prevent human errors
+		slog.Warn("persistent volumes defined but no placement hostname defined")
 	}
 
 	/*
@@ -345,7 +341,7 @@ func specToComposeConfig(spec *SpecFile, defaults Defaults, secrets Secrets) (*c
 }
 
 func parseSpecFile(content io.Reader) (*SpecFile, error) {
-	buf, err := ioutil.ReadAll(content)
+	buf, err := io.ReadAll(content)
 	if err != nil {
 		return nil, err
 	}
@@ -407,7 +403,6 @@ func convertEnvs(service ServiceSpec, secrets Secrets) (composetypes.MappingWith
 	}
 
 	for _, env := range service.ENVs {
-		env := env // pin
 		value := env.Value
 
 		if secretKey := env.Secret; secretKey != "" {
@@ -457,8 +452,8 @@ func convertPorts(service ServiceSpec, ownNamespace bool) []composetypes.Service
 		}
 	}
 
-	convertOneType(service.TcpPorts, "tcp")
-	convertOneType(service.UdpPorts, "udp")
+	convertOneType(service.TCPPorts, "tcp")
+	convertOneType(service.UDPPorts, "udp")
 
 	return composePorts
 }

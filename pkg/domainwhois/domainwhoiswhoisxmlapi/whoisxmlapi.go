@@ -12,14 +12,14 @@ import (
 // jsonwhois.com didn't seem to be able to parse .fi ccTLD dates
 // whoisxmlapi.com worked better
 func New(apiKey string) domainwhois.Service {
-	return &WhoisXmlApi{apiKey}
+	return &WhoisXMLAPI{apiKey}
 }
 
-type WhoisXmlApi struct {
+type WhoisXMLAPI struct {
 	apiKey string
 }
 
-func (w *WhoisXmlApi) Whois(domain string) (*domainwhois.Data, error) {
+func (w *WhoisXMLAPI) Whois(domain string) (*domainwhois.Data, error) {
 	// responses routinely last > 10 s
 	ctx, cancel := context.WithTimeout(context.TODO(), 20*time.Second)
 	defer cancel()
@@ -29,7 +29,7 @@ func (w *WhoisXmlApi) Whois(domain string) (*domainwhois.Data, error) {
 		w.apiKey,
 		domain)
 
-	result := &WhoisXmlApiData{}
+	result := &WhoisXMLAPIData{}
 	_, err := ezhttp.Get(
 		ctx,
 		endpoint,
@@ -38,23 +38,23 @@ func (w *WhoisXmlApi) Whois(domain string) (*domainwhois.Data, error) {
 		return nil, err
 	}
 
-	normalized := normalizeWhoisXmlApi(*result)
+	normalized := normalizeWhoisXMLAPI(*result)
 
 	return &normalized, nil
 }
 
-type whoisXmlApiStupidDate time.Time
+type whoisXMLAPIStupidDate time.Time
 
-func (w *whoisXmlApiStupidDate) UnmarshalJSON(input []byte) error {
+func (w *whoisXMLAPIStupidDate) UnmarshalJSON(input []byte) error {
 	t, err := time.Parse(`"2006-01-02 15:04:05 UTC"`, string(input))
 	if err != nil {
 		return err
 	}
-	*w = whoisXmlApiStupidDate(t)
+	*w = whoisXMLAPIStupidDate(t)
 	return nil
 }
 
-type WhoisXmlApiData struct {
+type WhoisXMLAPIData struct {
 	Record struct {
 		Domain       string `json:"domainName"`
 		Registrar    string `json:"registrarName"`
@@ -63,13 +63,13 @@ type WhoisXmlApiData struct {
 				Name    string `json:"name"`
 				RawText string `json:"rawText"`
 			} `json:"registrant"`
-			Created whoisXmlApiStupidDate `json:"createdDateNormalized"`
-			Expires whoisXmlApiStupidDate `json:"expiresDateNormalized"`
+			Created whoisXMLAPIStupidDate `json:"createdDateNormalized"`
+			Expires whoisXMLAPIStupidDate `json:"expiresDateNormalized"`
 		} `json:"registryData"`
 	} `json:"WhoisRecord"`
 }
 
-func normalizeWhoisXmlApi(w WhoisXmlApiData) domainwhois.Data {
+func normalizeWhoisXMLAPI(w WhoisXMLAPIData) domainwhois.Data {
 	return domainwhois.Data{
 		Domain:            w.Record.Domain,
 		Registrar:         w.Record.Registrar,

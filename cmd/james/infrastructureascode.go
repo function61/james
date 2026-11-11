@@ -56,7 +56,6 @@ func iacCommon(namespace string) {
 	osutil.ExitIfError(touch(pathToNamespaceFile("terraform.tfstate.backup")))
 
 	dockerArgs := []string{
-		"docker",
 		"run",
 		"--rm",
 		"-it",
@@ -86,7 +85,8 @@ func iacCommon(namespace string) {
 
 	fmt.Printf("Entering infrastructure-as-code container. Press ctrl+c to exit\n")
 
-	runIac := exec.Command(dockerArgs[0], dockerArgs[1:]...)
+	// The executable is fixed; arguments intentionally come from the local IaC configuration and are not interpreted by a shell.
+	runIac := exec.Command("docker", dockerArgs...) // #nosec G204 -- launching the configured IaC container is the purpose of this command.
 	runIac.Stdin = os.Stdin
 	runIac.Stdout = os.Stdout
 	runIac.Stderr = os.Stderr

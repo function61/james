@@ -63,10 +63,10 @@ func addDomain(name string) error {
 	jamesfile, err := readJamesfile()
 	osutil.ExitIfError(err)
 
-	if jamesfile.File.Credentials.WhoisXmlApi == nil {
+	if jamesfile.File.Credentials.WhoisXMLAPI == nil {
 		return errors.New("credentials not set")
 	}
-	svc := domainwhoiswhoisxmlapi.New(string(*jamesfile.File.Credentials.WhoisXmlApi))
+	svc := domainwhoiswhoisxmlapi.New(string(*jamesfile.File.Credentials.WhoisXMLAPI))
 
 	whoisData, err := svc.Whois(name)
 	if err != nil {

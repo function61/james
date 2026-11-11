@@ -10,10 +10,10 @@ import (
 )
 
 func TestParseAndNormalize(t *testing.T) {
-	raw := &WhoisXmlApiData{}
+	raw := &WhoisXMLAPIData{}
 	assert.Assert(t, json.Unmarshal([]byte(exampleResponse), raw) == nil)
 
-	data := normalizeWhoisXmlApi(*raw)
+	data := normalizeWhoisXMLAPI(*raw)
 
 	assert.EqualString(t, data.Domain, "example.com")
 	assert.EqualString(t, data.Registrar, "Gandi SAS")

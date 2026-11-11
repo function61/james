@@ -33,7 +33,7 @@ func nodesEntry() *cobra.Command {
 
 				tbl.AddRow(
 					node.Name,
-					fmt.Sprintf("%.1f", specs.RamGb),
+					fmt.Sprintf("%.1f", specs.RAMGb),
 					fmt.Sprintf("%.1f", specs.DiskGb),
 					specs.OsRelease,
 					specs.DockerVersion,

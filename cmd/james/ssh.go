@@ -4,24 +4,29 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
+	"path/filepath"
 
 	"github.com/function61/gokit/osutil"
 	"github.com/function61/james/pkg/jamestypes"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
+	"golang.org/x/crypto/ssh/knownhosts"
 )
 
-func runSshBash(addr string, username string, bashScript string, stdout io.Writer) error {
-	sshClient, err := ssh.Dial("tcp", addr, sshClientConfig(username))
-	osutil.ExitIfError(err)
+func runSSHBash(addr string, username string, bashScript string, stdout io.Writer) error {
+	sshClient, err := dialSSH(addr, username)
+	if err != nil {
+		return err
+	}
 	defer sshClient.Close()
 
 	sshSession, err := sshClient.NewSession()
-	osutil.ExitIfError(err)
+	if err != nil {
+		return fmt.Errorf("create SSH session: %w", err)
+	}
 	defer sshSession.Close()
 
 	sshSession.Stdin = bytes.NewBufferString(bashScript)
@@ -33,36 +38,47 @@ func runSshBash(addr string, username string, bashScript string, stdout io.Write
 	return sshSession.Run("/bin/bash --login")
 }
 
-func sshAuths() []ssh.AuthMethod {
-	auths := []ssh.AuthMethod{}
+func dialSSH(addr string, username string) (*ssh.Client, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, fmt.Errorf("find home directory for SSH known hosts: %w", err)
+	}
+	callback, err := knownhosts.New(filepath.Join(home, ".ssh", "known_hosts"))
+	if err != nil {
+		return nil, fmt.Errorf("load SSH known hosts: %w", err)
+	}
+
+	config := &ssh.ClientConfig{User: username, HostKeyCallback: callback}
+	// SSH_AUTH_SOCK is the conventional, user-controlled local SSH agent socket.
+	// #nosec G704 -- only a Unix socket is dialed, not a network address.
 	if sshAgentSock, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
-		// FIXME: sshAgentSock does not get Close()d?
-		auths = append(auths, ssh.PublicKeysCallback(agent.NewClient(sshAgentSock).Signers))
+		defer sshAgentSock.Close()
+		config.Auth = append(config.Auth, ssh.PublicKeysCallback(agent.NewClient(sshAgentSock).Signers))
 	}
 
-	return auths
-}
-
-func sshClientConfig(username string) *ssh.ClientConfig {
-	return &ssh.ClientConfig{
-		User:            username,
-		Auth:            sshAuths(),
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	client, err := ssh.Dial("tcp", addr, config)
+	if err != nil {
+		return nil, fmt.Errorf("connect SSH to %s: %w", addr, err)
 	}
+	return client, nil
 }
 
-func doSsh(servname string, jamesfile *jamestypes.JamesfileCtx) error {
+func doSSH(servname string, jamesfile *jamestypes.JamesfileCtx) error {
 	node, err := findNodeByHostname(jamesfile, servname)
 	if err != nil {
 		return err
 	}
 
-	sshClient, err := ssh.Dial("tcp", sshDefaultPort(node.Addr), sshClientConfig(node.Username))
-	osutil.ExitIfError(err)
+	sshClient, err := dialSSH(sshDefaultPort(node.Addr), node.Username)
+	if err != nil {
+		return err
+	}
 	defer sshClient.Close()
 
 	sshSession, err := sshClient.NewSession()
-	osutil.ExitIfError(err)
+	if err != nil {
+		return fmt.Errorf("create SSH session: %w", err)
+	}
 	defer sshSession.Close()
 
 	fmt.Printf("Connected to %s\n-----\n", servname)
@@ -74,7 +90,7 @@ func doSsh(servname string, jamesfile *jamestypes.JamesfileCtx) error {
 	}
 	// Request pseudo terminal
 	if err := sshSession.RequestPty("xterm", 40, 80, modes); err != nil {
-		log.Fatal("request for pseudo terminal failed: ", err)
+		return fmt.Errorf("request for pseudo terminal failed: %w", err)
 	}
 
 	sshSession.Stdin = os.Stdin
@@ -82,11 +98,11 @@ func doSsh(servname string, jamesfile *jamestypes.JamesfileCtx) error {
 	sshSession.Stderr = os.Stderr
 
 	if err := sshSession.Shell(); err != nil {
-		log.Fatalf("failed to start shell: %s", err.Error())
+		return fmt.Errorf("failed to start shell: %w", err)
 	}
 
 	if err := sshSession.Wait(); err != nil {
-		log.Fatalf("sshSession Wait(): %s", err.Error())
+		return fmt.Errorf("SSH session wait: %w", err)
 	}
 
 	return nil
@@ -101,7 +117,7 @@ func sshEntry() *cobra.Command {
 			jamesfile, err := readJamesfile()
 			osutil.ExitIfError(err)
 
-			osutil.ExitIfError(doSsh(args[0], jamesfile))
+			osutil.ExitIfError(doSSH(args[0], jamesfile))
 		},
 	}
 }

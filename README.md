@@ -126,6 +126,11 @@ $ james boxes import
 Updated Jamesfile with 1 boxes
 ```
 
+Before bootstrapping or connecting with `james ssh`, add each server's SSH host key
+to `~/.ssh/known_hosts` and verify its fingerprint through a trusted channel.
+James rejects unknown or changed host keys and uses the SSH agent indicated by
+`SSH_AUTH_SOCK` for authentication.
+
 Then bootstrap your cluster:
 
 ```

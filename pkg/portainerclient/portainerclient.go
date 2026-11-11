@@ -4,30 +4,30 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	"github.com/function61/gokit/ezhttp"
 )
 
 type Client struct {
-	baseUrl     string
+	baseURL     string
 	bearerToken string
-	endpointId  string
+	endpointID  string
 }
 
-func New(baseUrl string, bearerToken string, endpointId string) (*Client, error) {
-	if endpointId == "" {
+func New(baseURL string, bearerToken string, endpointID string) (*Client, error) {
+	if endpointID == "" {
 		return nil, errors.New("empty endpointId")
 	}
 
 	return &Client{
-		baseUrl:     baseUrl,
+		baseURL:     baseURL,
 		bearerToken: bearerToken,
-		endpointId:  endpointId,
+		endpointID:  endpointID,
 	}, nil
 }
 
-func (p *Client) Auth(username, password string) (string, error) {
+func (p *Client) Auth(username string, password string) (string, error) {
 	type request struct {
 		Username string
 		Password string
@@ -39,7 +39,7 @@ func (p *Client) Auth(username, password string) (string, error) {
 	res := response{}
 	if _, err := ezhttp.Post(
 		context.TODO(),
-		p.baseUrl+"/api/auth",
+		p.baseURL+"/api/auth",
 		ezhttp.SendJson(&request{Username: username, Password: password}),
 		ezhttp.RespondsJson(&res, true),
 	); err != nil {
@@ -62,7 +62,7 @@ func (p *Client) DockerInfo(ctx context.Context) (*DockerInfoResponse, error) {
 
 	if _, err := ezhttp.Get(
 		ctx,
-		p.baseUrl+"/api/endpoints/"+p.endpointId+"/docker/info",
+		p.baseURL+"/api/endpoints/"+p.endpointID+"/docker/info",
 		ezhttp.AuthBearer(p.bearerToken),
 		ezhttp.RespondsJson(res, true),
 	); err != nil {
@@ -76,7 +76,7 @@ func (p *Client) ListEndpoints(ctx context.Context) ([]Endpoint, error) {
 	endpoints := []Endpoint{}
 	if _, err := ezhttp.Get(
 		ctx,
-		p.baseUrl+"/api/endpoints",
+		p.baseURL+"/api/endpoints",
 		ezhttp.AuthBearer(p.bearerToken),
 		ezhttp.RespondsJson(&endpoints, true),
 	); err != nil {
@@ -90,7 +90,7 @@ func (p *Client) ListStacks(ctx context.Context) ([]Stack, error) {
 	stacks := []Stack{}
 	if _, err := ezhttp.Get(
 		ctx,
-		p.baseUrl+"/api/stacks",
+		p.baseURL+"/api/stacks",
 		ezhttp.AuthBearer(p.bearerToken),
 		ezhttp.RespondsJson(&stacks, true),
 	); err != nil {
@@ -100,7 +100,7 @@ func (p *Client) ListStacks(ctx context.Context) ([]Stack, error) {
 	return stacks, nil
 }
 
-func (p *Client) StackFile(ctx context.Context, stackId string) (string, error) {
+func (p *Client) StackFile(ctx context.Context, stackID string) (string, error) {
 	type response struct {
 		StackFileContent string
 	}
@@ -108,11 +108,11 @@ func (p *Client) StackFile(ctx context.Context, stackId string) (string, error) 
 	res := response{}
 	if _, err := ezhttp.Get(
 		ctx,
-		fmt.Sprintf("%s/api/stacks/%s/file", p.baseUrl, stackId),
+		fmt.Sprintf("%s/api/stacks/%s/file", p.baseURL, stackID),
 		ezhttp.AuthBearer(p.bearerToken),
 		ezhttp.RespondsJson(&res, true),
 	); err != nil {
-		return "", fmt.Errorf("StackFile: %s: %w", stackId, err)
+		return "", fmt.Errorf("StackFile: %s: %w", stackID, err)
 	}
 
 	return res.StackFileContent, nil
@@ -144,18 +144,18 @@ func (p *Client) CreateStack(ctx context.Context, name string, jamesRef string, 
 
 	if res, err := ezhttp.Post(
 		ctx,
-		fmt.Sprintf("%s/api/stacks?endpointId=%s&type=1&method=string", p.baseUrl, p.endpointId),
+		fmt.Sprintf("%s/api/stacks?endpointId=%s&type=1&method=string", p.baseURL, p.endpointID),
 		ezhttp.AuthBearer(p.bearerToken),
 		ezhttp.SendJson(&req),
 	); err != nil {
-		resp, _ := ioutil.ReadAll(res.Body)
+		resp, _ := io.ReadAll(res.Body)
 		return fmt.Errorf("%v: %s", err, resp)
 	}
 
 	return nil
 }
 
-func (p *Client) UpdateStack(ctx context.Context, stackId string, jamesRef string, stackFile string) error {
+func (p *Client) UpdateStack(ctx context.Context, stackID string, jamesRef string, stackFile string) error {
 	req := struct {
 		StackFileContent string
 		Env              []EnvPair
@@ -173,24 +173,24 @@ func (p *Client) UpdateStack(ctx context.Context, stackId string, jamesRef strin
 
 	if res, err := ezhttp.Put(
 		ctx,
-		fmt.Sprintf("%s/api/stacks/%s?endpointId=%s", p.baseUrl, stackId, p.endpointId),
+		fmt.Sprintf("%s/api/stacks/%s?endpointId=%s", p.baseURL, stackID, p.endpointID),
 		ezhttp.AuthBearer(p.bearerToken),
 		ezhttp.SendJson(&req),
 	); err != nil {
-		resp, _ := ioutil.ReadAll(res.Body)
+		resp, _ := io.ReadAll(res.Body)
 		return fmt.Errorf("%v: %s", err, resp)
 	}
 
 	return nil
 }
 
-func (p *Client) DeleteStack(ctx context.Context, stackId int) error {
+func (p *Client) DeleteStack(ctx context.Context, stackID int) error {
 	if res, err := ezhttp.Del(
 		ctx,
-		fmt.Sprintf("%s/api/stacks/%d", p.baseUrl, stackId),
+		fmt.Sprintf("%s/api/stacks/%d", p.baseURL, stackID),
 		ezhttp.AuthBearer(p.bearerToken),
 	); err != nil {
-		resp, _ := ioutil.ReadAll(res.Body)
+		resp, _ := io.ReadAll(res.Body)
 		return fmt.Errorf("%v: %s", err, resp)
 	}
 

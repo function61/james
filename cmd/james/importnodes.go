@@ -104,7 +104,7 @@ func importNodesEntry() *cobra.Command {
 // TODO: piggyback Terraform data structures
 
 type TerraformResourcePrimary struct {
-	Id         string            `json:"id"`
+	ID         string            `json:"id"`
 	Attributes map[string]string `json:"attributes"`
 }
 

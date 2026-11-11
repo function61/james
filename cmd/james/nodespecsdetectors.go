@@ -63,18 +63,17 @@ func attachDetectors(scripts *shellmultipart.Multipart) func() (*jamestypes.Node
 		ramGb := math.Round(ramMbParsed/1024*10) / 10
 
 		// remove uninteresting part in "Container Linux by CoreOS ...."
-		osReleaseCut := strings.Replace(
+		osReleaseCut := strings.ReplaceAll(
 			trimRightNewline(osRelease.Output()),
 			"Container Linux by ",
-			"",
-			-1)
+			"")
 
 		return &jamestypes.NodeSpecs{
 			KernelVersion: trimRightNewline(kernelVersion.Output()),
 			OsRelease:     osReleaseCut,
 			DockerVersion: trimRightNewline(dockerVersion.Output()),
 			DiskGb:        diskTotalGbParsed,
-			RamGb:         ramGb,
+			RAMGb:         ramGb,
 		}, nil
 	}
 }
