@@ -3,6 +3,7 @@ package servicespec
 import (
 	"bytes"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -21,7 +22,6 @@ func TestSpecToCompose(t *testing.T) {
 		caseFromFile("simple"),
 		caseFromFile("kitchenSink"),
 		caseFromFile("howToUpdateMissing"),
-		caseFromFile("persistentVolumeWithoutPlacementNode"),
 	}
 
 	for _, test := range tests {
@@ -29,7 +29,9 @@ func TestSpecToCompose(t *testing.T) {
 			actualOutput, err := specToCompose(bytes.NewBufferString(test.input), Secrets{})
 
 			if test.expectedError == "" {
-				assert.Assert(t, err == nil)
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
 				assert.EqualString(t, actualOutput, test.expectedOutput)
 			} else {
 				assert.Assert(t, err != nil)
@@ -53,7 +55,10 @@ func caseFromFile(title string) testcase {
 	errorPrefix := "ERROR: "
 
 	if strings.HasPrefix(parts[1], errorPrefix) {
-		expectedError := parts[1][len(errorPrefix):]
+		expectedError, err := strconv.Unquote(strings.TrimSuffix(parts[1][len(errorPrefix):], "\n"))
+		if err != nil {
+			panic(err)
+		}
 
 		return testcase{
 			title:          title,

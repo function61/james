@@ -1,22 +1,24 @@
-stack = "hellohttp"
-
-service {
-  name = "hellohttp"
+service "hellohttp" {
   image = "joonas/hellohttp"
   version = "v2"
+  replicas = null
   how_to_update = "parallel-one-at-a-time"
-  ingress_public = "80/HostRegexp:hellohttp.com"
+  ingress_public {
+    port = 80
+    rule = "HostRegexp:hellohttp.com"
+  }
+  net {
+    mode = "host"
+  }
   ram_mb = 16
 }
 
 -------------
-version: "3.5"
 services:
   hellohttp:
     deploy:
       labels:
-        traefik.enable: "true"
-        traefik.frontend.entryPoints: public_http,public_https
+        edgerouter.auth: public
         traefik.frontend.rule: HostRegexp:hellohttp.com
         traefik.port: "80"
       update_config:
@@ -28,9 +30,9 @@ services:
     environment:
       LOGGER_SUPPRESS_TIMESTAMPS: "1"
     image: joonas/hellohttp:v2
-    networks:
-      default: null
-networks:
-  default:
-    external:
-      name: fn61
+    labels:
+      edgerouter.auth: public
+      traefik.frontend.rule: HostRegexp:hellohttp.com
+      traefik.port: "80"
+    network_mode: host
+    restart: on-failure

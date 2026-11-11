@@ -1,15 +1,21 @@
-stack = "monitoring"
-
-service {
-  name = "grafana"
+service "grafana" {
   image = "fn61/grafana"
   version = "20181220_1152_030fca37"
+  replicas = null
   how_to_update = "stop-old-first"
   placement_node_hostname = "myserver.fn61.net"
-  ingress_public = "80/Host:grafana.example.com"
+  ingress_public {
+    port = 80
+    rule = "Host:grafana.example.com"
+  }
+  net {
+    mode = "host"
+  }
   ram_mb = 16
 
-  backup_command = ""
+  backup {
+    command = ""
+  }
 
   persistentvolume {
     name = "perkele"
@@ -18,15 +24,14 @@ service {
 }
 
 -------------
-version: "3.5"
 services:
   grafana:
     deploy:
       labels:
-        traefik.enable: "true"
-        traefik.frontend.entryPoints: public_http,public_https
+        edgerouter.auth: public
         traefik.frontend.rule: Host:grafana.example.com
         traefik.port: "80"
+        ubackup.command: ""
       update_config:
         order: stop-first
       resources:
@@ -38,15 +43,16 @@ services:
     environment:
       LOGGER_SUPPRESS_TIMESTAMPS: "1"
     image: fn61/grafana:20181220_1152_030fca37
-    networks:
-      default: null
+    labels:
+      edgerouter.auth: public
+      traefik.frontend.rule: Host:grafana.example.com
+      traefik.port: "80"
+      ubackup.command: ""
+    network_mode: host
+    restart: on-failure
     volumes:
     - type: volume
       source: perkele
       target: /data
-networks:
-  default:
-    external:
-      name: fn61
 volumes:
   perkele: {}

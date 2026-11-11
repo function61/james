@@ -1,12 +1,13 @@
-stack = "hellohttp"
-
-service {
-  name = "hellohttp"
+service "hellohttp" {
   image = "joonas/hellohttp"
   version = "v2"
-  ingress_public = "80/HostRegexp:hellohttp.com"
+  replicas = null
+  how_to_update = ""
+  net {
+    mode = "host"
+  }
   ram_mb = 16
 }
 
 -------------
-ERROR: unknown HowToUpdate: 
+ERROR: "unknown HowToUpdate: "
