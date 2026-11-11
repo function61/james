@@ -13,6 +13,7 @@ import (
 	"time"
 
 	composetypes "github.com/docker/cli/cli/compose/types"
+	"github.com/function61/gokit/jsonfile"
 	"github.com/go-yaml/yaml"
 	"github.com/hashicorp/hcl/v2/hclsimple"
 )
@@ -390,6 +391,14 @@ func specToCompose(content io.Reader, secrets Secrets) (string, error) {
 }
 
 type Secrets map[string]string
+
+func readSecrets() Secrets {
+	secrets := Secrets{}
+	if err := jsonfile.Read("/sysroot/apps/james/secrets.json", &secrets, true); err != nil {
+		panic(err)
+	}
+	return secrets
+}
 
 func convertEnvs(service ServiceSpec, secrets Secrets) (composetypes.MappingWithEquals, error) {
 	envs := composetypes.MappingWithEquals{}

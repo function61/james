@@ -28,7 +28,7 @@ func TestSpecToCompose(t *testing.T) {
 		test := test // pin
 
 		t.Run(test.title, func(t *testing.T) {
-			actualOutput, err := specToCompose(bytes.NewBufferString(test.input))
+			actualOutput, err := specToCompose(bytes.NewBufferString(test.input), Secrets{})
 
 			if test.expectedError == "" {
 				assert.Assert(t, err == nil)
