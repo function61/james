@@ -3,6 +3,7 @@ service "hellohttp" {
   version = "v2"
   replicas = null
   how_to_update = "parallel-one-at-a-time"
+  restart_policy = "on-failure"
   ingress_public {
     port = 80
     rule = "HostRegexp:hellohttp.com"

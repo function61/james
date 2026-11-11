@@ -22,6 +22,7 @@ func TestSpecToCompose(t *testing.T) {
 		caseFromFile("simple"),
 		caseFromFile("kitchenSink"),
 		caseFromFile("howToUpdateMissing"),
+		caseFromFile("restartPolicyMissing"),
 	}
 
 	for _, test := range tests {

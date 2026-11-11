@@ -1,0 +1,13 @@
+service "hellohttp" {
+  image = "joonas/hellohttp"
+  version = "v2"
+  replicas = null
+  how_to_update = "parallel-one-at-a-time"
+  net {
+    mode = "host"
+  }
+  ram_mb = 16
+}
+
+-------------
+ERROR: "service \"hellohttp\": restart_policy must be explicitly defined"

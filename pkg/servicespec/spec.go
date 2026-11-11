@@ -29,11 +29,18 @@ var knownUpdateConfigs = map[string]*composetypes.UpdateConfig{
 }
 
 func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes.Config, defaults Defaults, secrets Secrets) error {
+	withErr := func(err error) error { return fmt.Errorf("service %q: %w", service.Name, err) }
+
 	// most of the "not empty" checks carried out by HCL layer
+
+	// https://docs.docker.com/engine/containers/start-containers-automatically/#use-a-restart-policy
+	if service.RestartPolicy == "" {
+		return withErr(errors.New("restart_policy must be explicitly defined"))
+	}
 
 	envs, err := convertEnvs(service, secrets)
 	if err != nil {
-		return err
+		return withErr(err)
 	}
 
 	labels := composetypes.Labels{}
@@ -91,20 +98,20 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 	// forcing user explicitly to tell this because incorrect config is dangerous
 	updateConfig := knownUpdateConfigs[service.HowToUpdate]
 	if updateConfig == nil {
-		return fmt.Errorf("unknown HowToUpdate: %s", service.HowToUpdate)
+		return withErr(fmt.Errorf("unknown HowToUpdate: %s", service.HowToUpdate))
 	}
 
 	netMode := service.Net.Mode
 
 	if netMode != "own-bridge-namespace" && netMode != "host" {
-		return fmt.Errorf("unsupported network: %s (expecting own-bridge-namespace | host)", netMode)
+		return withErr(fmt.Errorf("unsupported network: %s (expecting own-bridge-namespace | host)", netMode))
 	}
 
 	ownNamespace := netMode == "own-bridge-namespace"
 	netHost := netMode == "host"
 
 	if countTrue(service.IngressPublic != nil, service.IngressBearer != nil, service.IngressSso != nil) > 1 {
-		return errors.New("maximum of one ingress per service exceeded")
+		return withErr(errors.New("maximum of one ingress per service exceeded"))
 	}
 
 	if ingress := service.IngressPublic; ingress != nil {
@@ -145,15 +152,6 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		securityOpts = append(securityOpts, item.Value)
 	}
 
-	// https://docs.docker.com/engine/containers/start-containers-automatically/#use-a-restart-policy
-	restartPolicy := func() string {
-		if explicitPolicy := service.RestartPolicy; explicitPolicy != "" {
-			return explicitPolicy
-		} else { // no explicit defined => default to on-failure
-			return "on-failure"
-		}
-	}()
-
 	composeService := composetypes.ServiceConfig{
 		Name: service.Name,
 		Image: func() string {
@@ -173,7 +171,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		User:        service.User,
 		Ports:       convertPorts(service, ownNamespace),
 		Labels:      labels, // TODO: duplicated here. needed for Edgerouter when in host networking mode
-		Restart:     restartPolicy,
+		Restart:     service.RestartPolicy,
 		Deploy: composetypes.DeployConfig{
 			Mode:         deployMode,
 			Labels:       labels,
@@ -220,7 +218,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 	}
 
 	if isGlobal && service.Replicas != nil {
-		return errors.New("global services cannot have 'replicas' defined")
+		return withErr(errors.New("global services cannot have 'replicas' defined"))
 	}
 
 	composeService.Deploy.Replicas = service.Replicas
@@ -252,11 +250,11 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		} else { // ownNamespace
 			ip := net.ParseIP(service.Net.IP).To4()
 			if ip == nil {
-				return fmt.Errorf("when net.mode == '%s' need IP; empty given", netMode)
+				return withErr(fmt.Errorf("when net.mode == '%s' need IP; empty given", netMode))
 			}
 
 			if ip[3] == 1 {
-				return fmt.Errorf("IP address cannot be x.y.z.1, is reserved for gateway; got %s", ip.String())
+				return withErr(fmt.Errorf("IP address cannot be x.y.z.1, is reserved for gateway; got %s", ip.String()))
 			}
 
 			// "10.61.3.2" => "10.61.3.0/24"
@@ -292,7 +290,7 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 
 	if service.PlacementNodeHostname != "" {
 		if !couldHavePlacementNodeHostname {
-			return errors.New("PlacementNodeHostname not supported when using new convention (own-namespace)")
+			return withErr(errors.New("PlacementNodeHostname not supported when using new convention (own-namespace)"))
 		}
 
 		composeService.Deploy.Placement.Constraints = []string{
@@ -305,12 +303,12 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 	/*
 		there are stateful volumes that can be shared between concurrent containers (file uploads @ erotuomari.com)
 		if len(service.PersistentVolumes) > 0 && service.HowToUpdate != "stop-old-first" {
-			return errors.New("expecting stop-old-first when have PersistentVolumes")
+			return withErr(errors.New("expecting stop-old-first when have PersistentVolumes"))
 		}
 	*/
 
 	if len(service.PersistentVolumes) > 0 && service.Backup == nil {
-		return errors.New(`stateful service - define at least empty backup section if you really don't want backups`)
+		return withErr(errors.New(`stateful service - define at least empty backup section if you really don't want backups`))
 	}
 
 	compose.Services = append(compose.Services, composeService)

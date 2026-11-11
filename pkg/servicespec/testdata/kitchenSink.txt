@@ -3,6 +3,7 @@ service "grafana" {
   version = "20181220_1152_030fca37"
   replicas = null
   how_to_update = "stop-old-first"
+  restart_policy = "on-failure"
   placement_node_hostname = "myserver.fn61.net"
   ingress_public {
     port = 80

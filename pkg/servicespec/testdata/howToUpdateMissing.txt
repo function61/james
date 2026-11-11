@@ -3,6 +3,7 @@ service "hellohttp" {
   version = "v2"
   replicas = null
   how_to_update = ""
+  restart_policy = "on-failure"
   net {
     mode = "host"
   }
@@ -10,4 +11,4 @@ service "hellohttp" {
 }
 
 -------------
-ERROR: "unknown HowToUpdate: "
+ERROR: "service \"hellohttp\": unknown HowToUpdate: "
