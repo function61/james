@@ -1,0 +1,26 @@
+service "isolated" {
+  image = "example"
+  version = "latest"
+  replicas = null
+  how_to_update = "stop-old-first"
+  restart_policy = "on-failure"
+  net {
+    mode = "none"
+  }
+  ram_mb = 16
+}
+
+-------------
+services:
+  isolated:
+    deploy:
+      update_config:
+        order: stop-first
+      resources:
+        limits:
+          memory: "16777216"
+    environment:
+      LOGGER_SUPPRESS_TIMESTAMPS: "1"
+    image: example:latest
+    network_mode: none
+    restart: on-failure

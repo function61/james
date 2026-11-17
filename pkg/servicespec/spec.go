@@ -103,8 +103,8 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 
 	netMode := service.Net.Mode
 
-	if netMode != "own-bridge-namespace" && netMode != "host" {
-		return withErr(fmt.Errorf("unsupported network: %s (expecting own-bridge-namespace | host)", netMode))
+	if netMode != "own-bridge-namespace" && netMode != "host" && netMode != "none" {
+		return withErr(fmt.Errorf("unsupported network: %s (expecting own-bridge-namespace | host | none)", netMode))
 	}
 
 	ownNamespace := netMode == "own-bridge-namespace"
@@ -231,7 +231,9 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		composeService.Pid = "host"
 	}
 
-	if netHost || ownNamespace {
+	if netMode == "none" {
+		composeService.NetworkMode = "none"
+	} else if netHost || ownNamespace {
 		/*
 			createNetworkConfigIfNotExists(compose, "host", composetypes.NetworkConfig{
 				External: composetypes.External{

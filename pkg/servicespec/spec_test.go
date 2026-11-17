@@ -87,6 +87,7 @@ service "empty" {
 func TestSpecToCompose(t *testing.T) {
 	tests := []testcase{
 		caseFromFile("simple"),
+		caseFromFile("networkNone"),
 		caseFromFile("kitchenSink"),
 		caseFromFile("howToUpdateMissing"),
 		caseFromFile("restartPolicyMissing"),
