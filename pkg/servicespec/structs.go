@@ -25,6 +25,7 @@ type ServiceSpec struct {
 	Command               []string `json:"command" hcl:"command,optional"`
 	Privileged            bool     `json:"privileged" hcl:"privileged,optional"`
 	Devices               []string `json:"devices" hcl:"devices,optional"`
+	DeviceCgroupRules     []string `json:"device_cgroup_rules" hcl:"device_cgroup_rules,optional"`
 	User                  string   `json:"user" hcl:"user,optional"`
 	RestartPolicy         string   `json:"restart_policy" hcl:"restart_policy,optional"`
 	Caps                  []string `json:"caps" hcl:"caps,optional"`

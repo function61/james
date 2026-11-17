@@ -216,6 +216,10 @@ func convertOneService(service ServiceSpec, isGlobal bool, compose *composetypes
 		Networks:    map[string]*composetypes.ServiceNetworkConfig{},
 		Hostname:    service.Hostname,
 	}
+	if len(service.DeviceCgroupRules) > 0 {
+		// Docker CLI's Compose service type has no dedicated device cgroup rules field.
+		composeService.Extras = map[string]any{"device_cgroup_rules": service.DeviceCgroupRules}
+	}
 
 	if isGlobal && service.Replicas != nil {
 		return withErr(errors.New("global services cannot have 'replicas' defined"))
